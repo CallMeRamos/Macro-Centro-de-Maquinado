@@ -1,20 +1,42 @@
-O0123 (Macro de cambio automatico de herramienta)
-G90 G599(Programacion absoluta, sistema de coordenadas G599 para cambio de herramienta)
+O0123 (Macro de cambio automatico de herramienta - DEFINITIVO)
+(=========================================================)
+(  TABLA DE SENALES I/O - ADTECH CNC4940                  )
+(=========================================================)
+(  SALIDAS [M89]:                                         )
+(    P6  : L1=liberar cono / L0=cerrar cono               )
+(    P8  : L1=rotacion magazin adelante / L0=detener      )
+(    P9  : L1=rotacion magazin atras / L0=detener         )
+(    P17 : L1=orientar husillo / L0=cancelar orientacion  )
+(    P20 : L1=regresar ATC / L0=cancelar regreso          )
+(    P21 : L1=acercar ATC / L0=cancelar [INVERTIDO ADTECH])
+(                                                          )
+(  ENTRADAS [M88]:                                         )
+(    P20 : L0=cono cerrado / L1=cono liberado [sensor 1]  )
+(    P21 : L0=cono cerrado / L1=cono liberado [sensor 2]  )
+(    P23 : sensor conteo herramientas [pulso H/L]         )
+(    P25 : L0=ATC en posicion de regreso                  )
+(    P26 : L0=ATC en posicion de trabajo                  )
+(=========================================================)
+
+(--- SECCION 1: INICIALIZACION ---)
+G90 G599 (programacion absoluta, sistema de coordenadas G599 para cambio de herramienta)
 #201=#4120 (lee numero de herramienta actual del sistema)
 
-(--- R3: RESET SEGURO DE SALIDAS ---)
+(--- SECCION 2: RESET SEGURO DE SALIDAS ---)
 M89 P8 L0 (detiene rotacion carrusel adelante si estaba activa)
 M89 P9 L0 (detiene rotacion carrusel atras si estaba activa)
 
+(--- SECCION 3: SALIDAS TEMPRANAS ---)
 IF[[#200] == 0]GOTO 100 (si herramienta solicitada es 0, sale del cambio)
-IF[[#200] == #201]GOTO 100 (si herramienta actual es igual a la solicitada, sale del cambio)
+IF[[#200] == #201]GOTO 100 (si herramienta actual es igual a la solicitada, sale)
 
+(--- SECCION 4: VALIDACIONES ---)
 IF[#400 > 21] (alarma si el maximo de herramientas excede 21)
 {
 	#3000=1 (Error: numero de herramienta excede el maximo del magazin)
 }
 
-IF[[[#200] > [#400]] || [[#201] > [#400]]] (alarma si herramienta solicitada o actual excede el maximo del magazin)
+IF[[[#200] > [#400]] || [[#201] > [#400]]] (alarma si herramienta solicitada o actual excede el maximo)
 {
 	#3000=1 (Error: numero de herramienta excede el maximo del magazin)
 }
@@ -24,53 +46,70 @@ IF[#201==0] (alarma si herramienta actual es 0)
 	#3000=1 (Error: numero de herramienta actual es cero)
 }
 
+(--- SECCION 5: PREPARACION - RETRACCION Y ORIENTACION ---)
 G01 Z[#401] F#405 (sube Z a altura segura)
 M09 (apaga refrigerante)
-M05 (S3: detiene husillo antes de orientar)
+M05 (detiene husillo antes de orientar)
 M89 P17 L1 (orienta husillo)
-G04 P2000 (espera 2000ms orientacion husillo)
+G04 P2000 (espera 2000ms para orientacion de husillo)
 
-IF[[#201]!=0] (verifica si herramienta actual no es 0)
-{ (ejecuta si herramienta actual no es cero)
+(--- SECCION 6: LIBERACION DE HERRAMIENTA ACTUAL ---)
+IF[[#201]!=0] (ejecuta solo si hay herramienta montada)
+{
+	(--- 6a: bajar Z al punto de referencia ---)
 	G01 Z[#404] F#405 (baja Z al punto de referencia)
-	M89 P21 L0 (acerca ATC al husillo)
-	M88 P26 L0 Q5000 (espera sensor posicion ATC en lugar, alarma si no en 5s)
+
+	(--- 6b: acercar ATC ---)
+	M89 P21 L1 (acerca ATC al husillo)
+	M88 P26 L0 Q5000 (espera sensor ATC en posicion de trabajo, alarma 5s)
+
+	(--- 6c: PRE-CHECK - verificar sensores muestran cono CERRADO antes de liberar ---)
+	M88 P20 L0 Q3000 (confirma sensor 1 HIGH = cono cerrado antes de liberar, alarma 3s)
+	M88 P21 L0 Q3000 (confirma sensor 2 HIGH = cono cerrado antes de liberar, alarma 3s)
+
+	(--- 6d: liberar cono ---)
 	M89 P6 L1 (libera cono del husillo)
 	G04 P500 (espera 500ms para mecanismo de liberacion)
-	(--- POST-CHECK: confirma que cono se libero ---)
-	M88 P20 L0 Q3000 (confirma P20 LOW = cono liberado, alarma 3s si no)
-	G01 Z[#401] F#405 (sube Z para evitar presionar herramienta al liberar)
-	G01 Z[#402] F#405 (sube Z a altura segura de retraccion)
+
+	(--- 6e: POST-CHECK - verificar sensores muestran cono LIBERADO ---)
+	M88 P20 L1 Q3000 (confirma sensor 1 LOW = cono liberado, alarma 3s)
+	M88 P21 L1 Q3000 (confirma sensor 2 LOW = cono liberado, alarma 3s)
+
+	(--- 6f: retraccion Z ---)
+	G01 Z[#401] F#405 (sube Z para separar herramienta del husillo)
+	G01 Z[#402] F#405 (sube Z a retraccion completa)
 }
 
-#1=0 (indicador de direccion de rotacion del carrusel)
+(--- SECCION 7: ALGORITMO DE ROTACION OPTIMA DEL MAGAZIN ---)
+#1=0 (indicador de direccion: 0=adelante, 1=atras)
 IF[#201 > [#400/2]] GOTO 1
 IF[[#201 >= #200] || [#200 > [#201+[#400/2]]]] GOTO 2
 M89 P8 L1 (rotacion carrusel adelante)
-#1=0 (indicador = 0, adelante)
+#1=0 (indicador = adelante)
 GOTO 3
 
 N2
 M89 P9 L1 (rotacion carrusel atras)
-#1=1 (indicador = 1, atras)
+#1=1 (indicador = atras)
 GOTO 3
 
 N1
 IF[[#201 >= #200 && #200 <= #400] && [#200 > [#201+#400/2]MOD#400]] GOTO 4
-M89 P8 L1
-#1=0
+M89 P8 L1 (rotacion carrusel adelante)
+#1=0 (indicador = adelante)
 GOTO 3
 
 N4
-M89 P9 L1
-#1=1
+M89 P9 L1 (rotacion carrusel atras)
+#1=1 (indicador = atras)
 
+(--- SECCION 8: CONTEO DE POSICIONES ---)
 N3
 #2=#201 (guarda herramienta actual en variable temporal)
 WHILE[#2!=#200] DO1 (repite hasta llegar a herramienta solicitada)
-	M88 P23 L0 Q5000 (espera senal conteo en bajo, alarma 5s si no)
-	M88 P23 L1 Q5000 (espera senal conteo en alto, alarma 5s si no)
-	IF[#1==1] GOTO 7 (verifica direccion de rotacion por indicador)
+	M88 P23 L0 Q5000 (espera senal conteo en bajo, alarma 5s)
+	M88 P23 L1 Q5000 (espera senal conteo en alto, alarma 5s)
+	IF[#1==1] GOTO 7 (si rotacion es atras, salta a N7)
 	#2 = #2+1 (avanza una posicion adelante)
 	IF[#2>#400] #2=1 (reinicia a 1 si excede maximo del magazin)
 	GOTO 8
@@ -80,8 +119,9 @@ WHILE[#2!=#200] DO1 (repite hasta llegar a herramienta solicitada)
 
 	N8
 
-END1 (fin del ciclo WHILE)
+END1 (fin del ciclo WHILE de conteo)
 
+(--- SECCION 9: DETENCION DE ROTACION ---)
 IF[#1==1] GOTO 5
 G04 P#408 (retardo para detener rotacion adelante)
 M89 P8 L0 (apaga senal de rotacion adelante)
@@ -91,22 +131,38 @@ N5
 G04 P#409 (retardo para detener rotacion atras)
 M89 P9 L0 (apaga senal de rotacion atras)
 
+(--- SECCION 10: INSERCION DE HERRAMIENTA NUEVA ---)
 N6
-M89 P21 L0 (acerca ATC al husillo)
-M88 P26 L0 Q5000 (espera sensor posicion ATC en lugar, alarma si no en 5s)
-G01 Z[#403] F#405(baja Z a 2.5mm arriba del punto de referencia)
+(--- 10a: acercar ATC ---)
+M89 P21 L1 (acerca ATC al husillo)
+M88 P26 L0 Q5000 (espera sensor ATC en posicion de trabajo, alarma 5s)
+
+(--- 10b: bajar Z a posicion de insercion ---)
+G01 Z[#403] F#405 (baja Z a 2.5mm arriba del punto de referencia)
+
+(--- 10c: cerrar cono ---)
 M89 P6 L0 (cierra cono del husillo)
-G04 P1000 (espera 1000ms cierre de cono)
-G01 Z[#404] F#405 (baja Z al punto de referencia para insertar herramienta)
-(--- S2: POST-CHECK confirma cono CERRADO despues de insercion ---)
-M88 P20 L1 Q3000 (confirma P20 HIGH = cono cerrado, alarma 3s si no)
-M89 P21 L1 (cancela senal de acercamiento ATC)
-M89 P20 L0 (regresa ATC a posicion inicial)
-M88 P25 L0 Q5000 (espera sensor regreso ATC, alarma si no en 5s)
-M89 P20 L1 (cancela senal de regreso ATC)
+G04 P1000 (espera 1000ms para cierre mecanico del cono)
+
+(--- 10d: bajar Z al punto de referencia ---)
+G01 Z[#404] F#405 (baja Z al punto de referencia para asentar herramienta)
+
+(--- 10e: POST-CHECK - verificar sensores muestran cono CERRADO ---)
+M88 P20 L0 Q3000 (confirma sensor 1 HIGH = cono cerrado, alarma 3s)
+M88 P21 L0 Q3000 (confirma sensor 2 HIGH = cono cerrado, alarma 3s)
+
+(--- 10f: regresar ATC ---)
+M89 P21 L0 (cancela senal de acercamiento ATC)
+M89 P20 L1 (regresa ATC a posicion inicial)
+M88 P25 L0 Q5000 (espera sensor regreso ATC, alarma 5s)
+M89 P20 L0 (cancela senal de regreso ATC)
+
+(--- SECCION 11: FINALIZACION ---)
 M89 P17 L0 (cancela orientacion del husillo)
 G01 Z[#401] F#405 (sube Z a altura segura)
 #5223=#[409+#200] (aplica compensacion de longitud de herramienta en sistema de coordenadas)
+
+(--- SECCION 12: SALIDA ---)
 N100
 M30
 %
