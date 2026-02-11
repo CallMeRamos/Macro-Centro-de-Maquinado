@@ -22,6 +22,25 @@ O0123 (Macro de cambio automatico de herramienta - DEFINITIVO)
 G90 G599 (programacion absoluta, sistema de coordenadas G599 para cambio de herramienta)
 #201=#4120 (lee numero de herramienta actual del sistema)
 
+(--- SECCION 1b: VERIFICACION PRE-VUELO DE I/O ---)
+(Si alguna alarma se activa: APAGUE la salida en teclado FCNC6D y reintente)
+
+(Verificar cono cerrado - detecta P6 activado desde teclado)
+IF[#1020 == 1]
+{
+	#3000=101 (CONO ABIERTO - APAGUE P6 EN TECLADO Y REINTENTE T)
+}
+IF[#1021 == 1]
+{
+	#3000=102 (CONO ABIERTO sensor 2 - APAGUE P6 EN TECLADO Y REINTENTE T)
+}
+
+(Verificar ATC en reposo - detecta P21 activado desde teclado)
+IF[#1026 == 0]
+{
+	#3000=103 (ATC FUERA DE POSICION - APAGUE P21 EN TECLADO Y REINTENTE T)
+}
+
 (--- SECCION 2: RESET COMPLETO DE SALIDAS ---)
 (--- 2a: Detener movimientos del magazin ---)
 M89 P8 L0 (detiene rotacion carrusel adelante)
