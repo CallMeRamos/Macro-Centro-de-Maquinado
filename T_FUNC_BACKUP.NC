@@ -22,25 +22,9 @@ O0123 (Macro de cambio automatico de herramienta - DEFINITIVO)
 G90 G599 (programacion absoluta, sistema de coordenadas G599 para cambio de herramienta)
 #201=#4120 (lee numero de herramienta actual del sistema)
 
-(--- SECCION 2: RESET COMPLETO DE SALIDAS ---)
-(--- 2a: Detener movimientos del magazin ---)
-M89 P8 L0 (detiene rotacion carrusel adelante)
-M89 P9 L0 (detiene rotacion carrusel atras)
-
-(--- 2b: Cancelar senales ATC ---)
-M89 P20 L0 (cancela regreso ATC si estaba activo desde teclado)
-M89 P21 L0 (cancela acercamiento ATC)
-
-(--- 2c: Asegurar cono cerrado ---)
-M89 P6 L0 (cierra cono - asegura sujecion de herramienta)
-G04 P500 (espera 500ms para estabilizacion del mecanismo de cierre)
-
-(--- 2d: Cancelar orientacion husillo ---)
-M89 P17 L0 (cancela orientacion del husillo)
-
-(--- 2e: Verificacion post-reset - confirma cono cerrado ---)
-M88 P20 L0 Q3000 (confirma sensor 1: cono cerrado, alarma 3s)
-M88 P21 L0 Q3000 (confirma sensor 2: cono cerrado, alarma 3s)
+(--- SECCION 2: RESET SEGURO DE SALIDAS ---)
+M89 P8 L0 (detiene rotacion carrusel adelante si estaba activa)
+M89 P9 L0 (detiene rotacion carrusel atras si estaba activa)
 
 (--- SECCION 3: SALIDAS TEMPRANAS ---)
 IF[[#200] == 0]GOTO 100 (si herramienta solicitada es 0, sale del cambio)
