@@ -9,10 +9,10 @@ O0123 (Macro de cambio automatico de herramienta - DEFINITIVO)
 (    P17 : L1=orientar husillo / L0=cancelar orientacion  )
 (    P20 : L1=regresar ATC / L0=cancelar regreso          )
 (    P21 : L1=acercar ATC / L0=cancelar [INVERTIDO ADTECH])
-(                                                          )
-(  ENTRADAS [M88]:                                         )
-(    P20 : L0=cono cerrado / L1=cono liberado [sensor 1]  )
-(    P21 : L0=cono cerrado / L1=cono liberado [sensor 2]  )
+(                                                         )
+(  ENTRADAS [M88]:                                        )
+(    P20 : L0=cono sujeto / L1=cono no sujeto [sensor sujecion])
+(    P21 : L0=no liberado / L1=cono liberado [sensor liberacion])
 (    P23 : sensor conteo herramientas [pulso H/L]         )
 (    P25 : L0=ATC en posicion de regreso                  )
 (    P26 : L0=ATC en posicion de trabajo                  )
@@ -30,15 +30,16 @@ IF[#1020 == 1]
 {
 	#3000=101 (CONO ABIERTO - APAGUE P6 EN TECLADO Y REINTENTE T)
 }
-IF[#1021 == 1]
-{
-	#3000=102 (CONO ABIERTO sensor 2 - APAGUE P6 EN TECLADO Y REINTENTE T)
-}
-
 (Verificar ATC en reposo - detecta P21 activado desde teclado)
 IF[#1026 == 0]
 {
 	#3000=103 (ATC FUERA DE POSICION - APAGUE P21 EN TECLADO Y REINTENTE T)
+}
+
+(Verificar ATC en reposo confirmado por sensor de regreso)
+IF[#1025 != 0]
+{
+	#3000=104 (ATC NO EN REPOSO - VERIFIQUE POSICION ATC Y REINTENTE T)
 }
 
 (--- SECCION 2: RESET COMPLETO DE SALIDAS ---)
@@ -58,9 +59,15 @@ G04 P500 (espera 500ms para estabilizacion del mecanismo de cierre)
 M89 P17 L0 (cancela orientacion del husillo)
 
 (--- 2e: Verificacion post-reset - confirma cono cerrado ---)
-M88 P20 L0 Q3000 (confirma sensor 1: cono cerrado, alarma 3s)
-M88 P21 L0 Q3000 (confirma sensor 2: cono cerrado, alarma 3s)
-
+#3=0
+WHILE[[#1020 != 0] && [#3 < 30]] DO3
+	G04 P100
+	#3=#3+1
+END3
+IF[#1020 != 0]
+{
+	#3000=105 (CONO NO CERRO DESPUES DE RESET sensor 1 - VERIFIQUE MECANISMO)
+}
 (--- SECCION 3: SALIDAS TEMPRANAS ---)
 IF[[#200] == 0]GOTO 100 (si herramienta solicitada es 0, sale del cambio)
 IF[[#200] == #201]GOTO 100 (si herramienta actual es igual a la solicitada, sale)
@@ -96,19 +103,35 @@ IF[[#201]!=0] (ejecuta solo si hay herramienta montada)
 
 	(--- 6b: acercar ATC ---)
 	M89 P21 L1 (acerca ATC al husillo)
-	M88 P26 L0 Q5000 (espera sensor ATC en posicion de trabajo, alarma 5s)
+	#3=0
+	WHILE[[#1026 != 0] && [#3 < 50]] DO3
+		G04 P100
+		#3=#3+1
+	END3
+	IF[#1026 != 0]
+	{
+		#3000=203 (ATC NO LLEGO A POSICION PARA LIBERACION - VERIFIQUE MECANISMO)
+	}
 
-	(--- 6c: PRE-CHECK - verificar sensores muestran cono CERRADO antes de liberar ---)
-	M88 P20 L0 Q3000 (confirma sensor 1 HIGH = cono cerrado antes de liberar, alarma 3s)
-	M88 P21 L0 Q3000 (confirma sensor 2 HIGH = cono cerrado antes de liberar, alarma 3s)
-
+	(--- 6c: PRE-CHECK - verificar P20 muestra cono CERRADO antes de liberar ---)
+	#3=0
+	WHILE[[#1020 != 0] && [#3 < 30]] DO3
+		G04 P100
+		#3=#3+1
+	END3
+	IF[#1020 != 0]
+	{
+		#3000=204 (CONO ABIERTO ANTES DE LIBERAR sensor 1 - VERIFIQUE CONO)
+	}
 	(--- 6d: liberar cono ---)
 	M89 P6 L1 (libera cono del husillo)
 	G04 P500 (espera 500ms para mecanismo de liberacion)
 
-	(--- 6e: POST-CHECK - verificar sensores muestran cono LIBERADO ---)
-	M88 P20 L1 Q3000 (confirma sensor 1 LOW = cono liberado, alarma 3s)
-	M88 P21 L1 Q3000 (confirma sensor 2 LOW = cono liberado, alarma 3s)
+	(--- 6e: POST-CHECK - verificar P21 muestra cono LIBERADO ---)
+	IF[#1021 != 1]
+	{
+		#3000=202 (CONO NO SE LIBERO sensor 2 - VERIFIQUE MECANISMO Y REINTENTE T)
+	}
 
 	(--- 6f: retraccion Z ---)
 	G01 Z[#401] F#405 (sube Z para separar herramienta del husillo)
@@ -170,7 +193,15 @@ M89 P9 L0 (apaga senal de rotacion atras)
 N6
 (--- 10a: acercar ATC ---)
 M89 P21 L1 (acerca ATC al husillo)
-M88 P26 L0 Q5000 (espera sensor ATC en posicion de trabajo, alarma 5s)
+#3=0
+WHILE[[#1026 != 0] && [#3 < 50]] DO3
+	G04 P100
+	#3=#3+1
+END3
+IF[#1026 != 0]
+{
+	#3000=304 (ATC NO LLEGO A POSICION PARA INSERCION - VERIFIQUE MECANISMO)
+}
 
 (--- 10b: bajar Z a posicion de insercion ---)
 G01 Z[#403] F#405 (baja Z a 2.5mm arriba del punto de referencia)
@@ -182,20 +213,36 @@ G04 P1000 (espera 1000ms para cierre mecanico del cono)
 (--- 10d: bajar Z al punto de referencia ---)
 G01 Z[#404] F#405 (baja Z al punto de referencia para asentar herramienta)
 
-(--- 10e: POST-CHECK - verificar sensores muestran cono CERRADO ---)
-M88 P20 L0 Q3000 (confirma sensor 1 HIGH = cono cerrado, alarma 3s)
-M88 P21 L0 Q3000 (confirma sensor 2 HIGH = cono cerrado, alarma 3s)
-
+(--- 10e: POST-CHECK - verificar P20 muestra cono CERRADO ---)
+IF[#1020 != 0]
+{
+	#3000=301 (CONO NO CERRO DESPUES DE INSERCION sensor 1 - VERIFIQUE Y REINTENTE T)
+}
 (--- 10f: regresar ATC ---)
 M89 P21 L0 (cancela senal de acercamiento ATC)
 M89 P20 L1 (regresa ATC a posicion inicial)
-M88 P25 L0 Q5000 (espera sensor regreso ATC, alarma 5s)
+(--- espera regreso ATC con alarma personalizada, max 5s ---)
+#3=0
+WHILE[[#1025 != 0] && [#3 < 50]] DO2
+	G04 P100
+	#3=#3+1
+END2
+IF[#1025 != 0]
+{
+	#3000=303 (ATC NO REGRESO A POSICION - VERIFIQUE MECANISMO Y REINTENTE T)
+}
 M89 P20 L0 (cancela senal de regreso ATC)
 
 (--- SECCION 11: FINALIZACION ---)
 M89 P17 L0 (cancela orientacion del husillo)
 G01 Z[#401] F#405 (sube Z a altura segura)
 #5223=#[409+#200] (aplica compensacion de longitud de herramienta en sistema de coordenadas)
+
+(--- 11b: verificacion final - cono sujeto para permitir arranque de husillo ---)
+IF[#1020 != 0]
+{
+	#3000=305 (CONO NO SUJETO AL FINALIZAR - VERIFIQUE ANTES DE ARRANCAR HUSILLO)
+}
 
 (--- SECCION 12: SALIDA ---)
 N100
