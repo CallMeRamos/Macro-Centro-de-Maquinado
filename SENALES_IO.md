@@ -18,9 +18,9 @@ Comando: `M89 P## L#` donde P = pin, L = nivel (1=activar, 0=desactivar)
 **Donde se usa:**
 | Linea | Comando | Seccion | Contexto |
 |-------|---------|---------|----------|
-| 55 | `M89 P6 L0` | 2c | Reset — asegurar cono cerrado |
-| 127 | `M89 P6 L1` | 6d | Liberar herramienta actual del husillo |
-| 210 | `M89 P6 L0` | 10c | Cerrar cono sobre herramienta nueva |
+| 43 | `M89 P6 L0` | 2c | Reset — asegurar cono cerrado |
+| 125 | `M89 P6 L1` | 6d | Liberar herramienta actual del husillo |
+| 213 | `M89 P6 L0` | 10c | Cerrar cono sobre herramienta nueva |
 
 ---
 
@@ -34,10 +34,10 @@ Comando: `M89 P## L#` donde P = pin, L = nivel (1=activar, 0=desactivar)
 **Donde se usa:**
 | Linea | Comando | Seccion | Contexto |
 |-------|---------|---------|----------|
-| 47 | `M89 P8 L0` | 2a | Reset — detener rotacion |
-| 145 | `M89 P8 L1` | 7 | Iniciar rotacion adelante (ruta optima) |
-| 156 | `M89 P8 L1` | 7 | Iniciar rotacion adelante (ruta alternativa) |
-| 185 | `M89 P8 L0` | 9 | Detener rotacion al llegar a herramienta destino |
+| 35 | `M89 P8 L0` | 2a | Reset — detener rotacion |
+| 148 | `M89 P8 L1` | 7 | Iniciar rotacion adelante (ruta optima) |
+| 159 | `M89 P8 L1` | 7 | Iniciar rotacion adelante (ruta alternativa) |
+| 188 | `M89 P8 L0` | 9 | Detener rotacion al llegar a herramienta destino |
 
 ---
 
@@ -51,10 +51,10 @@ Comando: `M89 P## L#` donde P = pin, L = nivel (1=activar, 0=desactivar)
 **Donde se usa:**
 | Linea | Comando | Seccion | Contexto |
 |-------|---------|---------|----------|
-| 48 | `M89 P9 L0` | 2a | Reset — detener rotacion |
-| 150 | `M89 P9 L1` | 7 | Iniciar rotacion atras (ruta optima) |
-| 161 | `M89 P9 L1` | 7 | Iniciar rotacion atras (ruta alternativa) |
-| 190 | `M89 P9 L0` | 9 | Detener rotacion al llegar a herramienta destino |
+| 36 | `M89 P9 L0` | 2a | Reset — detener rotacion |
+| 153 | `M89 P9 L1` | 7 | Iniciar rotacion atras (ruta optima) |
+| 164 | `M89 P9 L1` | 7 | Iniciar rotacion atras (ruta alternativa) |
+| 193 | `M89 P9 L0` | 9 | Detener rotacion al llegar a herramienta destino |
 
 ---
 
@@ -68,9 +68,9 @@ Comando: `M89 P## L#` donde P = pin, L = nivel (1=activar, 0=desactivar)
 **Donde se usa:**
 | Linea | Comando | Seccion | Contexto |
 |-------|---------|---------|----------|
-| 59 | `M89 P17 L0` | 2d | Reset — cancelar orientacion |
-| 95 | `M89 P17 L1` | 5 | Orientar husillo antes de cambio |
-| 237 | `M89 P17 L0` | 11 | Finalizacion — cancelar orientacion |
+| 47 | `M89 P17 L0` | 2d | Reset — cancelar orientacion |
+| 83 | `M89 P17 L1` | 5 | Orientar husillo antes de cambio |
+| 245 | `M89 P17 L0` | 11 | Finalizacion — cancelar orientacion |
 
 ---
 
@@ -84,9 +84,9 @@ Comando: `M89 P## L#` donde P = pin, L = nivel (1=activar, 0=desactivar)
 **Donde se usa:**
 | Linea | Comando | Seccion | Contexto |
 |-------|---------|---------|----------|
-| 51 | `M89 P20 L0` | 2b | Reset — cancelar regreso |
-| 223 | `M89 P20 L1` | 10f | Regresar ATC despues de insertar herramienta |
-| 234 | `M89 P20 L0` | 10f | Cancelar senal despues de confirmar regreso |
+| 39 | `M89 P20 L0` | 2b | Reset — cancelar regreso |
+| 231 | `M89 P20 L1` | 10f | Regresar ATC despues de insertar herramienta |
+| 242 | `M89 P20 L0` | 10f | Cancelar senal despues de confirmar regreso |
 
 ---
 
@@ -102,10 +102,10 @@ Comando: `M89 P## L#` donde P = pin, L = nivel (1=activar, 0=desactivar)
 **Donde se usa:**
 | Linea | Comando | Seccion | Contexto |
 |-------|---------|---------|----------|
-| 52 | `M89 P21 L0` | 2b | Reset — cancelar acercamiento |
-| 105 | `M89 P21 L1` | 6b | Acercar ATC para liberar herramienta |
-| 195 | `M89 P21 L1` | 10a | Acercar ATC para insertar herramienta |
-| 222 | `M89 P21 L0` | 10f | Cancelar acercamiento antes de regresar |
+| 40 | `M89 P21 L0` | 2b | Reset — cancelar acercamiento |
+| 103 | `M89 P21 L1` | 6b | Acercar ATC para liberar herramienta |
+| 198 | `M89 P21 L1` | 10a | Acercar ATC para insertar herramienta |
+| 230 | `M89 P21 L0` | 10f | Cancelar acercamiento antes de regresar |
 
 ---
 
@@ -114,25 +114,22 @@ Comando: `M89 P## L#` donde P = pin, L = nivel (1=activar, 0=desactivar)
 Comando M88: `M88 P## L# Q####` donde P = pin, L = nivel esperado, Q = timeout (ms)
 Variable macro: `#1000+N` donde N = numero de pin (lectura directa del estado)
 
-### P20 — Sensor de sujecion del cono
+### P20 — Sensor de orientacion del husillo
 
 | Estado | Significado |
 |--------|-------------|
-| 0 (`L0`) | Cono **sujeto** — herramienta correctamente agarrada |
-| 1 (`L1`) | Cono **no sujeto** — herramienta no esta agarrada |
+| 0 (`L0`) | Husillo **no orientado** |
+| 1 (`L1`) | Husillo **orientado** — en posicion angular fija para acople |
 
 Variable macro: **`#1020`**
 
-**Funcion dedicada:** Verificar que la herramienta esta correctamente **sujeta** (cerrado). NO se usa para verificar liberacion.
+**Funcion dedicada:** Verificar que el husillo esta correctamente orientado para acoplar/desacoplar herramienta. NO se usa para verificar sujecion ni liberacion del cono.
 
 **Donde se usa:**
 | Linea | Metodo | Seccion | Verificacion |
 |-------|--------|---------|-------------|
-| 29 | `#1020 == 1` | 1b | Alarma 101: cono no sujeto al inicio |
-| 63 | `#1020 != 0` | 2e | Alarma 105: cono no cerro post-reset (3s) |
-| 118 | `#1020 != 0` | 6c | Alarma 204: cono abierto antes de liberar (3s) |
-| 217 | `#1020 != 0` | 10e | Alarma 301: cono no cerro post-insercion |
-| 242 | `#1020 != 0` | 11b | Alarma 305: cono no sujeto al finalizar |
+| 86 | `#1020 != 1` (polling) | 5b | Alarma 106: orientacion husillo no confirmada (5s) |
+| 90 | `#1020 != 1` (check) | 5b | Disparo de alarma 106 |
 
 ---
 
@@ -150,7 +147,33 @@ Variable macro: **`#1021`**
 **Donde se usa:**
 | Linea | Metodo | Seccion | Verificacion |
 |-------|--------|---------|-------------|
-| 131 | `#1021 != 1` | 6e | Alarma 202: cono no se libero |
+| 129 | `#1021 != 1` (polling) | 6e | Alarma 202: cono no se libero (1.5s) |
+| 133 | `#1021 != 1` (check) | 6e | Disparo de alarma 202 |
+
+---
+
+### P22 — Sensor de sujecion del cono
+
+| Estado | Significado |
+|--------|-------------|
+| 0 (`L0`) | Cono **no sujetado** — herramienta no esta agarrada |
+| 1 (`L1`) | Cono **sujetado** — herramienta correctamente agarrada |
+
+Variable macro: **`#1022`**
+
+**Funcion dedicada:** Verificar que la herramienta esta correctamente **sujeta** (cono cerrado). NO se usa para verificar liberacion.
+
+**Donde se usa:**
+| Linea | Metodo | Seccion | Verificacion |
+|-------|--------|---------|-------------|
+| 28 | `#1022 != 1` (check) | 1b | Alarma 101: cono no sujetado al inicio |
+| 51 | `#1022 != 1` (polling) | 2e | Alarma 105: cono no sujetado post-reset (3s) |
+| 55 | `#1022 != 1` (check) | 2e | Disparo de alarma 105 |
+| 116 | `#1022 != 1` (polling) | 6c | Alarma 204: cono no sujetado antes de liberar (3s) |
+| 120 | `#1022 != 1` (check) | 6c | Disparo de alarma 204 |
+| 221 | `#1022 != 1` (polling) | 10e | Alarma 301: cono no sujetado post-insercion (3s) |
+| 225 | `#1022 != 1` (check) | 10e | Disparo de alarma 301 |
+| 250 | `#1022 != 1` (check) | 11b | Alarma 305: cono no sujetado al finalizar |
 
 ---
 
@@ -165,8 +188,8 @@ Variable macro: `#1023` (no usada directamente, se lee via M88)
 **Donde se usa:**
 | Linea | Metodo | Seccion | Verificacion |
 |-------|--------|---------|-------------|
-| 168 | `M88 P23 L0 Q5000` | 8 | Espera pulso bajo dentro del loop de conteo |
-| 169 | `M88 P23 L1 Q5000` | 8 | Espera pulso alto dentro del loop de conteo |
+| 171 | `M88 P23 L0 Q5000` | 8 | Espera pulso bajo dentro del loop de conteo |
+| 172 | `M88 P23 L1 Q5000` | 8 | Espera pulso alto dentro del loop de conteo |
 
 > **Nota:** Estos M88 permanecen con timeout generico (5s) porque estan dentro de `DO1` y reemplazarlos requeriria anidar WHILEs.
 
@@ -184,8 +207,8 @@ Variable macro: **`#1025`**
 **Donde se usa:**
 | Linea | Metodo | Seccion | Verificacion |
 |-------|--------|---------|-------------|
-| 40 | `#1025 != 0` | 1b | Alarma 104: ATC no en reposo al inicio |
-| 226 | `#1025 != 0` | 10f | Alarma 303: ATC no regreso (5s) |
+| 234 | `#1025 != 0` (polling) | 10f | Alarma 303: ATC no regreso (5s) |
+| 238 | `#1025 != 0` (check) | 10f | Disparo de alarma 303 |
 
 ---
 
@@ -201,9 +224,10 @@ Variable macro: **`#1026`**
 **Donde se usa:**
 | Linea | Metodo | Seccion | Verificacion |
 |-------|--------|---------|-------------|
-| 34 | `#1026 == 0` | 1b | Alarma 103: ATC fuera de posicion al inicio |
-| 107 | `#1026 != 0` | 6b | Alarma 203: ATC no llego para liberacion (5s) |
-| 197 | `#1026 != 0` | 10a | Alarma 304: ATC no llego para insercion (5s) |
+| 105 | `#1026 != 0` (polling) | 6b | Alarma 203: ATC no llego para liberacion (5s) |
+| 109 | `#1026 != 0` (check) | 6b | Disparo de alarma 203 |
+| 200 | `#1026 != 0` (polling) | 10a | Alarma 304: ATC no llego para insercion (5s) |
+| 204 | `#1026 != 0` (check) | 10a | Disparo de alarma 304 |
 
 ---
 
@@ -212,13 +236,15 @@ Variable macro: **`#1026`**
 ```
 SALIDAS (M89)              ENTRADAS (M88 / #1000+N)
 =============              ========================
-P6  → Cono (abrir/cerrar)  P20 → Sensor sujecion cono
+P6  → Cono (abrir/cerrar)  P20 → Sensor orientacion husillo
 P8  → Magazin adelante     P21 → Sensor liberacion cono
-P9  → Magazin atras        P23 → Sensor conteo
-P17 → Orientar husillo     P25 → Sensor regreso ATC
-P20 → Regresar ATC         P26 → Sensor posicion ATC
-P21 → Acercar ATC
+P9  → Magazin atras        P22 → Sensor sujecion cono
+P17 → Orientar husillo     P23 → Sensor conteo herramientas
+P20 → Regresar ATC         P25 → Sensor regreso ATC
+P21 → Acercar ATC          P26 → Sensor posicion ATC
 ```
+
+> **IMPORTANTE:** P20 y P21 se usan tanto como salidas (M89) como entradas (M88/#1000+N) con funciones completamente diferentes. Como salida, P20 controla el regreso del ATC; como entrada, P20 lee el sensor de orientacion del husillo.
 
 ## Nota sobre lectura de I/O en ADTECH CNC4940
 

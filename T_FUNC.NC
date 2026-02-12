@@ -58,10 +58,7 @@ IF[#1022 != 1]
 }
 (--- SECCION 3: SALIDAS TEMPRANAS ---)
 IF[[#200] == 0]GOTO 100 (si herramienta solicitada es 0, sale del cambio)
-IF[[#200] == #201]
-{
-	#3000=102 (HERRAMIENTA YA MONTADA EN HUSILLO - NO REQUIERE CAMBIO)
-}
+IF[[#200] == #201]GOTO 100 (si herramienta actual es igual a la solicitada, sale)
 
 (--- SECCION 4: VALIDACIONES ---)
 IF[#400 > 21] (alarma si el maximo de herramientas excede 21)
@@ -126,11 +123,10 @@ IF[[#201]!=0] (ejecuta solo si hay herramienta montada)
 	}
 	(--- 6d: liberar cono ---)
 	M89 P6 L1 (libera cono del husillo)
-	G04 P500 (espera 500ms para mecanismo de liberacion)
 
-	(--- 6e: POST-CHECK - verificar P21 muestra cono LIBERADO - max 3s ---)
+	(--- 6e: POST-CHECK - verificar P21 muestra cono LIBERADO - max 1.5s ---)
 	#3=0
-	WHILE[[#1021 != 1] && [#3 < 30]] DO3
+	WHILE[[#1021 != 1] && [#3 < 15]] DO3
 		G04 P100
 		#3=#3+1
 	END3
@@ -138,6 +134,7 @@ IF[[#201]!=0] (ejecuta solo si hay herramienta montada)
 	{
 		#3000=202 (CONO NO SE LIBERO P21 - VERIFIQUE MECANISMO Y REINTENTE T)
 	}
+	G04 P500 (espera 500ms post-liberacion antes de subir Z)
 
 	(--- 6f: retraccion Z ---)
 	G01 Z[#401] F#405 (sube Z para separar herramienta del husillo)
