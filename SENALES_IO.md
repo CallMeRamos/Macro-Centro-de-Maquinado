@@ -19,8 +19,8 @@ Comando: `M89 P## L#` donde P = pin, L = nivel (1=activar, 0=desactivar)
 | Linea | Comando | Seccion | Contexto |
 |-------|---------|---------|----------|
 | 43 | `M89 P6 L0` | 2c | Reset — asegurar cono cerrado |
-| 125 | `M89 P6 L1` | 6d | Liberar herramienta actual del husillo |
-| 213 | `M89 P6 L0` | 10c | Cerrar cono sobre herramienta nueva |
+| 115 | `M89 P6 L1` | 6d | Liberar herramienta actual del husillo |
+| 203 | `M89 P6 L0` | 10c | Cerrar cono sobre herramienta nueva |
 
 ---
 
@@ -35,9 +35,9 @@ Comando: `M89 P## L#` donde P = pin, L = nivel (1=activar, 0=desactivar)
 | Linea | Comando | Seccion | Contexto |
 |-------|---------|---------|----------|
 | 35 | `M89 P8 L0` | 2a | Reset — detener rotacion |
-| 148 | `M89 P8 L1` | 7 | Iniciar rotacion adelante (ruta optima) |
-| 159 | `M89 P8 L1` | 7 | Iniciar rotacion adelante (ruta alternativa) |
-| 188 | `M89 P8 L0` | 9 | Detener rotacion al llegar a herramienta destino |
+| 138 | `M89 P8 L1` | 7 | Iniciar rotacion adelante (ruta optima) |
+| 149 | `M89 P8 L1` | 7 | Iniciar rotacion adelante (ruta alternativa) |
+| 178 | `M89 P8 L0` | 9 | Detener rotacion al llegar a herramienta destino |
 
 ---
 
@@ -52,9 +52,9 @@ Comando: `M89 P## L#` donde P = pin, L = nivel (1=activar, 0=desactivar)
 | Linea | Comando | Seccion | Contexto |
 |-------|---------|---------|----------|
 | 36 | `M89 P9 L0` | 2a | Reset — detener rotacion |
-| 153 | `M89 P9 L1` | 7 | Iniciar rotacion atras (ruta optima) |
-| 164 | `M89 P9 L1` | 7 | Iniciar rotacion atras (ruta alternativa) |
-| 193 | `M89 P9 L0` | 9 | Detener rotacion al llegar a herramienta destino |
+| 143 | `M89 P9 L1` | 7 | Iniciar rotacion atras (ruta optima) |
+| 154 | `M89 P9 L1` | 7 | Iniciar rotacion atras (ruta alternativa) |
+| 183 | `M89 P9 L0` | 9 | Detener rotacion al llegar a herramienta destino |
 
 ---
 
@@ -70,7 +70,7 @@ Comando: `M89 P## L#` donde P = pin, L = nivel (1=activar, 0=desactivar)
 |-------|---------|---------|----------|
 | 47 | `M89 P17 L0` | 2d | Reset — cancelar orientacion |
 | 83 | `M89 P17 L1` | 5 | Orientar husillo antes de cambio |
-| 245 | `M89 P17 L0` | 11 | Finalizacion — cancelar orientacion |
+| 235 | `M89 P17 L0` | 11 | Finalizacion — cancelar orientacion |
 
 ---
 
@@ -85,8 +85,8 @@ Comando: `M89 P## L#` donde P = pin, L = nivel (1=activar, 0=desactivar)
 | Linea | Comando | Seccion | Contexto |
 |-------|---------|---------|----------|
 | 39 | `M89 P20 L0` | 2b | Reset — cancelar regreso |
-| 231 | `M89 P20 L1` | 10f | Regresar ATC despues de insertar herramienta |
-| 242 | `M89 P20 L0` | 10f | Cancelar senal despues de confirmar regreso |
+| 221 | `M89 P20 L1` | 10f | Regresar ATC despues de insertar herramienta |
+| 232 | `M89 P20 L0` | 10f | Cancelar senal despues de confirmar regreso |
 
 ---
 
@@ -104,8 +104,8 @@ Comando: `M89 P## L#` donde P = pin, L = nivel (1=activar, 0=desactivar)
 |-------|---------|---------|----------|
 | 40 | `M89 P21 L0` | 2b | Reset — cancelar acercamiento |
 | 103 | `M89 P21 L1` | 6b | Acercar ATC para liberar herramienta |
-| 198 | `M89 P21 L1` | 10a | Acercar ATC para insertar herramienta |
-| 230 | `M89 P21 L0` | 10f | Cancelar acercamiento antes de regresar |
+| 188 | `M89 P21 L1` | 10a | Acercar ATC para insertar herramienta |
+| 220 | `M89 P21 L0` | 10f | Cancelar acercamiento antes de regresar |
 
 ---
 
@@ -147,8 +147,8 @@ Variable macro: **`#1021`**
 **Donde se usa:**
 | Linea | Metodo | Seccion | Verificacion |
 |-------|--------|---------|-------------|
-| 129 | `#1021 != 1` (polling) | 6e | Alarma 202: cono no se libero (1.5s) |
-| 133 | `#1021 != 1` (check) | 6e | Disparo de alarma 202 |
+| 119 | `#1021 != 1` (polling) | 6e | Alarma 202: cono no se libero (1.5s) |
+| 123 | `#1021 != 1` (check) | 6e | Disparo de alarma 202 |
 
 ---
 
@@ -169,11 +169,9 @@ Variable macro: **`#1022`**
 | 28 | `#1022 != 1` (check) | 1b | Alarma 101: cono no sujetado al inicio |
 | 51 | `#1022 != 1` (polling) | 2e | Alarma 105: cono no sujetado post-reset (3s) |
 | 55 | `#1022 != 1` (check) | 2e | Disparo de alarma 105 |
-| 116 | `#1022 != 1` (polling) | 6c | Alarma 204: cono no sujetado antes de liberar (3s) |
-| 120 | `#1022 != 1` (check) | 6c | Disparo de alarma 204 |
-| 221 | `#1022 != 1` (polling) | 10e | Alarma 301: cono no sujetado post-insercion (3s) |
-| 225 | `#1022 != 1` (check) | 10e | Disparo de alarma 301 |
-| 250 | `#1022 != 1` (check) | 11b | Alarma 305: cono no sujetado al finalizar |
+| 211 | `#1022 != 1` (polling) | 10e | Alarma 301: cono no sujetado post-insercion (3s) |
+| 215 | `#1022 != 1` (check) | 10e | Disparo de alarma 301 |
+| 240 | `#1022 != 1` (check) | 11b | Alarma 305: cono no sujetado al finalizar |
 
 ---
 
@@ -188,8 +186,8 @@ Variable macro: `#1023` (no usada directamente, se lee via M88)
 **Donde se usa:**
 | Linea | Metodo | Seccion | Verificacion |
 |-------|--------|---------|-------------|
-| 171 | `M88 P23 L0 Q5000` | 8 | Espera pulso bajo dentro del loop de conteo |
-| 172 | `M88 P23 L1 Q5000` | 8 | Espera pulso alto dentro del loop de conteo |
+| 161 | `M88 P23 L0 Q5000` | 8 | Espera pulso bajo dentro del loop de conteo |
+| 162 | `M88 P23 L1 Q5000` | 8 | Espera pulso alto dentro del loop de conteo |
 
 > **Nota:** Estos M88 permanecen con timeout generico (5s) porque estan dentro de `DO1` y reemplazarlos requeriria anidar WHILEs.
 
@@ -207,8 +205,8 @@ Variable macro: **`#1025`**
 **Donde se usa:**
 | Linea | Metodo | Seccion | Verificacion |
 |-------|--------|---------|-------------|
-| 234 | `#1025 != 0` (polling) | 10f | Alarma 303: ATC no regreso (5s) |
-| 238 | `#1025 != 0` (check) | 10f | Disparo de alarma 303 |
+| 224 | `#1025 != 0` (polling) | 10f | Alarma 303: ATC no regreso (5s) |
+| 228 | `#1025 != 0` (check) | 10f | Disparo de alarma 303 |
 
 ---
 
@@ -226,8 +224,8 @@ Variable macro: **`#1026`**
 |-------|--------|---------|-------------|
 | 105 | `#1026 != 0` (polling) | 6b | Alarma 203: ATC no llego para liberacion (5s) |
 | 109 | `#1026 != 0` (check) | 6b | Disparo de alarma 203 |
-| 200 | `#1026 != 0` (polling) | 10a | Alarma 304: ATC no llego para insercion (5s) |
-| 204 | `#1026 != 0` (check) | 10a | Disparo de alarma 304 |
+| 190 | `#1026 != 0` (polling) | 10a | Alarma 304: ATC no llego para insercion (5s) |
+| 194 | `#1026 != 0` (check) | 10a | Disparo de alarma 304 |
 
 ---
 

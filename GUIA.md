@@ -48,25 +48,24 @@ Apaga todas las salidas para partir de un estado conocido:
 4. **Alarma 106:** Espera confirmacion de orientacion (P20=1, timeout 5s)
 5. Espera 2000ms post-orientacion antes de continuar
 
-### Seccion 6: Liberacion de herramienta (lineas 96-142)
+### Seccion 6: Liberacion de herramienta (lineas 96-132)
 
 Solo se ejecuta si hay herramienta montada (`#201 != 0`):
 1. Baja Z al punto de referencia (`#404`)
 2. Acerca ATC al husillo (`M89 P21 L1`)
 3. **Alarma 203:** Espera que ATC llegue (P26=0, timeout 5s)
-4. **Alarma 204:** Verifica cono sujetado antes de liberar (P22=1, timeout 3s)
-5. Libera cono (`M89 P6 L1`)
-6. **Alarma 202:** Verifica cono liberado (P21=1, timeout 1.5s)
-7. Espera 500ms post-liberacion
-8. Sube Z a altura segura y luego a retraccion completa (`#402`)
+4. Libera cono (`M89 P6 L1`)
+5. **Alarma 202:** Verifica cono liberado (P21=1, timeout 1.5s)
+6. Espera 500ms post-liberacion
+7. Sube Z a altura segura y luego a retraccion completa (`#402`)
 
-### Secciones 7-9: Rotacion del magazin (lineas 144-193)
+### Secciones 7-9: Rotacion del magazin (lineas 134-183)
 
 1. **Seccion 7:** Calcula la ruta mas corta (adelante o atras) usando el algoritmo de optimizacion
 2. **Seccion 8:** Cuenta posiciones mediante pulsos del sensor P23 (transiciones bajo→alto)
 3. **Seccion 9:** Aplica retardo de detencion (`#408` o `#409`) y apaga rotacion
 
-### Seccion 10: Insercion de herramienta (lineas 195-242)
+### Seccion 10: Insercion de herramienta (lineas 185-232)
 
 1. Acerca ATC (`M89 P21 L1`)
 2. **Alarma 304:** Espera que ATC llegue (P26=0, timeout 5s)
@@ -78,14 +77,14 @@ Solo se ejecuta si hay herramienta montada (`#201 != 0`):
 8. **Alarma 303:** Espera regreso ATC (P25=0, timeout 5s)
 9. Cancela senal de regreso
 
-### Seccion 11: Finalizacion (lineas 244-253)
+### Seccion 11: Finalizacion (lineas 234-243)
 
 1. Cancela orientacion del husillo (`M89 P17 L0`)
 2. Sube Z a altura segura
 3. Aplica compensacion de longitud (`#[409+#200]` → `#5223`)
 4. **Alarma 305:** Verificacion final de cono sujetado (P22=1)
 
-### Seccion 12: Salida (lineas 255-258)
+### Seccion 12: Salida (lineas 245-248)
 
 `N100` → `M30` (fin de programa)
 
@@ -123,9 +122,6 @@ INICIO (T##)
     v
 [6b] Acercar ATC ──timeout──> ALARMA 203
     |OK
-    v
-[6c] Verificar P22 sujetado (3s) ──NO──> ALARMA 204
-    |SI
     v
 [6d] Liberar cono (P6=1)
     |
@@ -170,8 +166,8 @@ FIN (M30)
 |-------|---------|----------|----------|------|
 | 44 | `G04 P500` | 500ms | Post-cierre cono en reset | Estabilizacion mecanica |
 | 94 | `G04 P2000` | 2000ms | Post-orientacion husillo | Espera antes de acercar ATC |
-| 137 | `G04 P500` | 500ms | Post-liberacion cono | Espera antes de subir Z |
-| 214 | `G04 P1000` | 1000ms | Post-cierre cono en insercion | Cierre mecanico del cono |
+| 127 | `G04 P500` | 500ms | Post-liberacion cono | Espera antes de subir Z |
+| 204 | `G04 P1000` | 1000ms | Post-cierre cono en insercion | Cierre mecanico del cono |
 
 ### Timeouts de alarma (polling loops)
 
@@ -181,7 +177,6 @@ FIN (M30)
 | 106 | 5s | 50 x 100ms | `#3 < 50` |
 | 202 | 1.5s | 15 x 100ms | `#3 < 15` |
 | 203 | 5s | 50 x 100ms | `#3 < 50` |
-| 204 | 3s | 30 x 100ms | `#3 < 30` |
 | 301 | 3s | 30 x 100ms | `#3 < 30` |
 | 303 | 5s | 50 x 100ms | `#3 < 50` |
 | 304 | 5s | 50 x 100ms | `#3 < 50` |
@@ -199,7 +194,7 @@ FIN (M30)
 
 El magazin es circular con `#400` posiciones (21 por defecto). El algoritmo determina si es mas rapido rotar hacia adelante o hacia atras para llegar de la herramienta actual (`#201`) a la solicitada (`#200`).
 
-### Logica (Seccion 7, lineas 144-165)
+### Logica (Seccion 7, lineas 134-155)
 
 ```
 Si herramienta_actual > mitad_del_magazin:
@@ -258,13 +253,6 @@ El conteo se realiza en la Seccion 8 mediante:
 - Sensor P26 — posicion y cableado
 - Que la logica invertida de P21 en ADTECH este correcta
 - Obstrucciones en el recorrido del brazo
-
-### Alarma 204 — CONO NO SUJETADO ANTES DE LIBERAR
-**Causa:** Antes de intentar liberar cono, P22 no muestra sujecion (3s timeout).
-**Verificar:**
-- Estado del cono — puede haberse aflojado durante acercamiento del ATC
-- Sensor P22 — verificar que no se haya desalineado por vibracion
-- **Nota:** Esta es una verificacion de seguridad para evitar liberar un cono ya abierto
 
 ### Alarma 301 — CONO NO SUJETADO POST-INSERCION
 **Causa:** Despues de cerrar cono y asentar herramienta nueva, P22 no confirma sujecion en 3s.

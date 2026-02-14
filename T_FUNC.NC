@@ -111,16 +111,6 @@ IF[[#201]!=0] (ejecuta solo si hay herramienta montada)
 		#3000=203 (ATC NO LLEGO A POSICION PARA LIBERACION - VERIFIQUE MECANISMO)
 	}
 
-	(--- 6c: PRE-CHECK - verificar P22 muestra cono SUJETADO antes de liberar ---)
-	#3=0
-	WHILE[[#1022 != 1] && [#3 < 30]] DO3
-		G04 P100
-		#3=#3+1
-	END3
-	IF[#1022 != 1]
-	{
-		#3000=204 (CONO NO SUJETADO ANTES DE LIBERAR P22 - VERIFIQUE CONO)
-	}
 	(--- 6d: liberar cono ---)
 	M89 P6 L1 (libera cono del husillo)
 

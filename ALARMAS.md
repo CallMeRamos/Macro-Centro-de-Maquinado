@@ -37,14 +37,12 @@ Estas alarmas ocurren durante la **liberacion** de la herramienta actual del hus
 | Alarma | Sensor | Variable | Condicion | Timeout | Linea | Mensaje en pantalla | Accion del operador |
 |--------|--------|----------|-----------|---------|-------|---------------------|---------------------|
 | 203 | P26 (ATC pos) | `#1026` | `#1026 != 0` | 5s | 104-112 | ATC NO LLEGO A POSICION PARA LIBERACION - VERIFIQUE MECANISMO | Verificar movimiento del brazo ATC |
-| 204 | P22 (sujecion) | `#1022` | `#1022 != 1` | 3s | 115-123 | CONO NO SUJETADO ANTES DE LIBERAR P22 - VERIFIQUE CONO | Verificar estado del cono antes de intentar liberar |
-| 202 | P21 (liberacion) | `#1021` | `#1021 != 1` | 1.5s | 128-136 | CONO NO SE LIBERO P21 - VERIFIQUE MECANISMO Y REINTENTE T | Verificar mecanismo de liberacion del cono |
+| 202 | P21 (liberacion) | `#1021` | `#1021 != 1` | 1.5s | 118-126 | CONO NO SE LIBERO P21 - VERIFIQUE MECANISMO Y REINTENTE T | Verificar mecanismo de liberacion del cono |
 
 **Secuencia normal de Seccion 6:**
 1. ATC se acerca al husillo (alarma **203** si no llega en 5s)
-2. Se verifica P22 = cono sujetado antes de liberar (alarma **204** si no esta sujetado en 3s)
-3. Se libera cono con `M89 P6 L1`
-4. Se verifica P21 = cono liberado (alarma **202** si no se libero en 1.5s)
+2. Se libera cono con `M89 P6 L1`
+3. Se verifica P21 = cono liberado (alarma **202** si no se libero en 1.5s)
 
 ---
 
@@ -54,10 +52,10 @@ Estas alarmas ocurren durante la **insercion** de la herramienta nueva y la veri
 
 | Alarma | Sensor | Variable | Condicion | Timeout | Linea | Mensaje en pantalla | Accion del operador |
 |--------|--------|----------|-----------|---------|-------|---------------------|---------------------|
-| 304 | P26 (ATC pos) | `#1026` | `#1026 != 0` | 5s | 199-207 | ATC NO LLEGO A POSICION PARA INSERCION - VERIFIQUE MECANISMO | Verificar movimiento del brazo ATC |
-| 301 | P22 (sujecion) | `#1022` | `#1022 != 1` | 3s | 220-228 | CONO NO SUJETADO DESPUES DE INSERCION P22 - VERIFIQUE Y REINTENTE T | Verificar cierre del cono sobre herramienta nueva |
-| 303 | P25 (ATC rep) | `#1025` | `#1025 != 0` | 5s | 233-241 | ATC NO REGRESO A POSICION - VERIFIQUE MECANISMO Y REINTENTE T | Verificar regreso del brazo ATC |
-| 305 | P22 (sujecion) | `#1022` | `#1022 != 1` | — | 250-253 | CONO NO SUJETADO AL FINALIZAR P22 - VERIFIQUE ANTES DE ARRANCAR HUSILLO | Verificar sujecion antes de arrancar husillo |
+| 304 | P26 (ATC pos) | `#1026` | `#1026 != 0` | 5s | 189-197 | ATC NO LLEGO A POSICION PARA INSERCION - VERIFIQUE MECANISMO | Verificar movimiento del brazo ATC |
+| 301 | P22 (sujecion) | `#1022` | `#1022 != 1` | 3s | 210-218 | CONO NO SUJETADO DESPUES DE INSERCION P22 - VERIFIQUE Y REINTENTE T | Verificar cierre del cono sobre herramienta nueva |
+| 303 | P25 (ATC rep) | `#1025` | `#1025 != 0` | 5s | 223-231 | ATC NO REGRESO A POSICION - VERIFIQUE MECANISMO Y REINTENTE T | Verificar regreso del brazo ATC |
+| 305 | P22 (sujecion) | `#1022` | `#1022 != 1` | — | 240-243 | CONO NO SUJETADO AL FINALIZAR P22 - VERIFIQUE ANTES DE ARRANCAR HUSILLO | Verificar sujecion antes de arrancar husillo |
 
 **Secuencia normal de Secciones 10-11:**
 1. ATC se acerca al husillo (alarma **304** si no llega en 5s)
@@ -77,10 +75,11 @@ Las siguientes alarmas existieron en versiones anteriores y fueron removidas:
 | ~~102~~ | Herramienta ya montada en husillo — reemplazada por `GOTO 100` (salida silenciosa) |
 | ~~103~~ | ATC fuera de posicion al inicio — era redundante con el reset de salidas |
 | ~~104~~ | ATC no en reposo al inicio — era redundante con el reset de salidas |
+| ~~204~~ | Cono no sujetado antes de liberar — redundante con alarmas 101 y 105 |
 
 ---
 
-## Resumen de alarmas activas (10 total)
+## Resumen de alarmas activas (9 total)
 
 | Alarma | Seccion | Sensor | Timeout | Descripcion corta |
 |--------|---------|--------|---------|-------------------|
@@ -88,7 +87,6 @@ Las siguientes alarmas existieron en versiones anteriores y fueron removidas:
 | 105 | 2e | P22 | 3s | Cono no sujetado post-reset |
 | 106 | 5b | P20 | 5s | Orientacion husillo no confirmada |
 | 203 | 6b | P26 | 5s | ATC no llego para liberacion |
-| 204 | 6c | P22 | 3s | Cono no sujetado antes de liberar |
 | 202 | 6e | P21 | 1.5s | Cono no se libero |
 | 304 | 10a | P26 | 5s | ATC no llego para insercion |
 | 301 | 10e | P22 | 3s | Cono no sujetado post-insercion |
