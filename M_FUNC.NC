@@ -8,8 +8,8 @@
 (*                                                    *)
 (* ============ TABLA RESUMEN DE I/O ============    *)
 (*                                                    *)
-(* SEC 1 - REFRIGERANTE M08/M09                      *)
-(*   M08/M09  = Pin dinamico via #10044              *)
+(* SEC 1 - REFRIGERANTE M08/M09 (COOL)               *)
+(*   M08/M09  = OUT04 (tecla COOL)                   *)
 (*                                                    *)
 (* SEC 2 - SALIDAS SISTEMA CON LEDs M10-M27          *)
 (*   M10/M11  = OUT02  LED #1849                     *)
@@ -26,15 +26,15 @@
 (*   M128/M129 = OUT13  LED #1884  Refrigerante 2   *)
 (*   M130/M131 = OUT14  LED #1885  Contactor         *)
 (*                                                    *)
-(* SEC 4 - LUBRICANTE M32/M33                        *)
-(*   M32/M33  = Pin dinamico via #10043              *)
+(* SEC 4 - LUBRICANTE M32/M33 (LUBE)                 *)
+(*   M32/M33  = OUT06 (tecla LUBE)                   *)
 (*                                                    *)
 (* SEC 5 - SELECCION HERRAMIENTAS F0-F11 + FCNC6D   *)
 (*   M34/M35  = OUT15  LED #1886  FCNC6D            *)
-(*   M36/M37  = OUT16  LED #1887  FCNC6D            *)
+(*   M36/M37  = OUT16  LED #1887  FEEDING            *)
 (*   M38/M39  = OUT17  LED #1889  Orient. husillo   *)
 (*   M40/M41  = F0  LED #1843  Selector pagina       *)
-(*   M42/M43  = F1  LED #1848  PAG1:T01              *)
+(*   M42/M43  = F1  LED #1848  PAG1:T01 PAG2:T11    *)
 (*   M44/M45  = F2  LED #1853  PAG1:T02 PAG2:T12    *)
 (*   M46/M47  = F3  LED #1858  PAG1:T03 PAG2:T13    *)
 (*   M48/M49  = F4  LED #1863  PAG1:T04 PAG2:T14    *)
@@ -44,7 +44,7 @@
 (*   M56/M57  = F8  LED #1892  PAG1:T08 PAG2:T18    *)
 (*   M58/M59  = F9  LED #1893  PAG1:T09 PAG2:T19    *)
 (*   M60/M61  = F10 LED #1894  PAG1:T10 PAG2:T20    *)
-(*   M62/M63  = F11 LED #1895  PAG1:T11 PAG2:T21    *)
+(*   M62/M63  = F11 LED #1895  PAG2:T21 solamente    *)
 (*   M64/M65  = OUT20  LED #1896  FCNC6D F12        *)
 (*   M66/M67  = OUT21  LED #1897  FCNC6D F13        *)
 (*                                                    *)
@@ -70,26 +70,24 @@
 (*   O205 = Parar    M05                             *)
 (*                                                    *)
 (* SEC 10 - REFRIGERANTE/LUBRICANTE CON LEDs         *)
-(*   O208/O209 = Refrig. LEDs #1810, #1861           *)
-(*   O212/O213 = Lubric. LEDs #1811, #1859           *)
+(*   O208/O209 = COOL OUT04  LEDs #1810, #1861       *)
+(*   O212/O213 = LUBE OUT06  LEDs #1811, #1859       *)
 (*                                                    *)
 (* ================================================= *)
 
 (****************************************************)
-(* SECCION 1: REFRIGERANTE M08/M09                  *)
-(* Pin dinamico via parametro #10044                 *)
+(* SECCION 1: REFRIGERANTE M08/M09 (tecla COOL)     *)
+(* Salida fija: OUT04                                *)
 (****************************************************)
 O0008
-(M08 - Refrigerante ON - pin dinamico)
-#1=#10044(Lee parametro para obtener pin de salida)
-#2=1400+#1
+(M08 - COOL Refrigerante ON - OUT04)
+#2=1400+4
 ##2=1
 M3000
 %
 O0009
-(M09 - Refrigerante OFF - pin dinamico)
-#1=#10044(Lee parametro para obtener pin de salida)
-#2=1400+#1
+(M09 - COOL Refrigerante OFF - OUT04)
+#2=1400+4
 ##2=0
 M3000
 %
@@ -293,20 +291,18 @@ M3000
 %
 
 (****************************************************)
-(* SECCION 4: LUBRICANTE M32/M33                    *)
-(* Pin dinamico via parametro #10043                 *)
+(* SECCION 4: LUBRICANTE M32/M33 (tecla LUBE)       *)
+(* Salida fija: OUT06                                *)
 (****************************************************)
 O0032
-(M32 - Lubricante ON - pin dinamico)
-#1=#10043(Lee parametro para obtener pin de salida)
-#2=1400+#1
+(M32 - LUBE Lubricante ON - OUT06)
+#2=1400+6
 ##2=1
 M3000
 %
 O0033
-(M33 - Lubricante OFF - pin dinamico)
-#1=#10043(Lee parametro para obtener pin de salida)
-#2=1400+#1
+(M33 - LUBE Lubricante OFF - OUT06)
+#2=1400+6
 ##2=0
 M3000
 %
@@ -334,14 +330,14 @@ M3000
 %
 
 O0036
-(M36 - FCNC6D OUT16 ON + LED #1887)
+(M36 - FEEDING OUT16 ON + LED #1887)
 #2=1400+16
 ##2=1
 #1887=1
 M3000
 %
 O0037
-(M37 - FCNC6D OUT16 OFF + LED #1887)
+(M37 - FEEDING OUT16 OFF + LED #1887)
 #2=1400+16
 ##2=0
 #1887=0
@@ -385,6 +381,13 @@ IF[#3906 != 3]
 {
   M3000
 }
+(Apagar LED de herramienta activa)
+IF[#151 > 0]
+{
+  ##151=0
+  #151=0
+}
+(Toggle pagina)
 IF[#150 != 1]
 {
   #150=1
@@ -407,6 +410,31 @@ ELSE
   G04 P150
   #1843=1
 }
+(Re-encender LED segun herramienta actual del ATC)
+#3=#4120
+IF[#3 == 0] GOTO 50
+IF[#150 == 1]
+{
+  IF[#3 > 10] GOTO 50
+}
+ELSE
+{
+  IF[#3 < 11] GOTO 50
+  #3=#3-10
+}
+IF[#3 == 1] #151=1848
+IF[#3 == 2] #151=1853
+IF[#3 == 3] #151=1858
+IF[#3 == 4] #151=1863
+IF[#3 == 5] #151=1874
+IF[#3 == 6] #151=1890
+IF[#3 == 7] #151=1891
+IF[#3 == 8] #151=1892
+IF[#3 == 9] #151=1893
+IF[#3 == 10] #151=1894
+IF[#3 == 11] #151=1895
+##151=1
+N50
 M3000
 %
 O0041
@@ -415,6 +443,13 @@ IF[#3906 != 3]
 {
   M3000
 }
+(Apagar LED de herramienta activa)
+IF[#151 > 0]
+{
+  ##151=0
+  #151=0
+}
+(Toggle pagina)
 IF[#150 != 1]
 {
   #150=1
@@ -437,12 +472,41 @@ ELSE
   G04 P150
   #1843=1
 }
+(Re-encender LED segun herramienta actual del ATC)
+#3=#4120
+IF[#3 == 0] GOTO 50
+IF[#150 == 1]
+{
+  IF[#3 > 10] GOTO 50
+}
+ELSE
+{
+  IF[#3 < 11] GOTO 50
+  #3=#3-10
+}
+IF[#3 == 1] #151=1848
+IF[#3 == 2] #151=1853
+IF[#3 == 3] #151=1858
+IF[#3 == 4] #151=1863
+IF[#3 == 5] #151=1874
+IF[#3 == 6] #151=1890
+IF[#3 == 7] #151=1891
+IF[#3 == 8] #151=1892
+IF[#3 == 9] #151=1893
+IF[#3 == 10] #151=1894
+IF[#3 == 11] #151=1895
+##151=1
+N50
 M3000
 %
 
 O0042
-(M42 - F1 herramienta: PAG1=T01 PAG2=ninguna)
+(M42 - F1 herramienta: PAG1=T01 PAG2=T11)
 IF[#3906 != 3]
+{
+  M3000
+}
+IF[#152 == 1]
 {
   M3000
 }
@@ -456,6 +520,10 @@ IF[#150 != 2]
 {
   T1
 }
+ELSE
+{
+  T11
+}
 M3000
 %
 O0043
@@ -466,6 +534,10 @@ M3000
 O0044
 (M44 - F2 herramienta: PAG1=T02 PAG2=T12)
 IF[#3906 != 3]
+{
+  M3000
+}
+IF[#152 == 1]
 {
   M3000
 }
@@ -496,6 +568,10 @@ IF[#3906 != 3]
 {
   M3000
 }
+IF[#152 == 1]
+{
+  M3000
+}
 IF[#151 > 0]
 {
   ##151=0
@@ -520,6 +596,10 @@ M3000
 O0048
 (M48 - F4 herramienta: PAG1=T04 PAG2=T14)
 IF[#3906 != 3]
+{
+  M3000
+}
+IF[#152 == 1]
 {
   M3000
 }
@@ -550,6 +630,10 @@ IF[#3906 != 3]
 {
   M3000
 }
+IF[#152 == 1]
+{
+  M3000
+}
 IF[#151 > 0]
 {
   ##151=0
@@ -574,6 +658,10 @@ M3000
 O0052
 (M52 - F6 herramienta: PAG1=T06 PAG2=T16)
 IF[#3906 != 3]
+{
+  M3000
+}
+IF[#152 == 1]
 {
   M3000
 }
@@ -604,6 +692,10 @@ IF[#3906 != 3]
 {
   M3000
 }
+IF[#152 == 1]
+{
+  M3000
+}
 IF[#151 > 0]
 {
   ##151=0
@@ -628,6 +720,10 @@ M3000
 O0056
 (M56 - F8 herramienta: PAG1=T08 PAG2=T18)
 IF[#3906 != 3]
+{
+  M3000
+}
+IF[#152 == 1]
 {
   M3000
 }
@@ -658,6 +754,10 @@ IF[#3906 != 3]
 {
   M3000
 }
+IF[#152 == 1]
+{
+  M3000
+}
 IF[#151 > 0]
 {
   ##151=0
@@ -685,6 +785,10 @@ IF[#3906 != 3]
 {
   M3000
 }
+IF[#152 == 1]
+{
+  M3000
+}
 IF[#151 > 0]
 {
   ##151=0
@@ -707,8 +811,16 @@ M3000
 %
 
 O0062
-(M62 - F11 herramienta: PAG1=T11 PAG2=T21)
+(M62 - F11 herramienta: PAG2=T21 solamente)
 IF[#3906 != 3]
+{
+  M3000
+}
+IF[#152 == 1]
+{
+  M3000
+}
+IF[#150 != 2]
 {
   M3000
 }
@@ -718,14 +830,7 @@ IF[#151 > 0]
 }
 #1895=1
 #151=1895
-IF[#150 != 2]
-{
-  T11
-}
-ELSE
-{
-  T21
-}
+T21
 M3000
 %
 O0063
@@ -1081,18 +1186,16 @@ M3000
 (* Pin dinamico igual que M08/M09 y M32/M33          *)
 (****************************************************)
 O208
-(Refrigerante ON con LEDs de panel)
-#1=#10044(Lee parametro para obtener pin de salida)
-#2=1400+#1
+(COOL - Refrigerante ON - OUT04 + LEDs)
+#2=1400+4
 ##2=1
 #1810=1(LED refrigerante)
 #1861=1(LED auxiliar refrigerante)
 M3000
 %
 O209
-(Refrigerante OFF con LEDs de panel)
-#1=#10044(Lee parametro para obtener pin de salida)
-#2=1400+#1
+(COOL - Refrigerante OFF - OUT04 + LEDs)
+#2=1400+4
 ##2=0
 #1810=0(LED refrigerante)
 #1861=0(LED auxiliar refrigerante)
@@ -1100,18 +1203,16 @@ M3000
 %
 
 O212
-(Lubricante ON con LEDs de panel)
-#1=#10043(Lee parametro para obtener pin de salida)
-#2=1400+#1
+(LUBE - Lubricante ON - OUT06 + LEDs)
+#2=1400+6
 ##2=1
 #1811=1(LED lubricante)
 #1859=1(LED auxiliar lubricante)
 M3000
 %
 O213
-(Lubricante OFF con LEDs de panel)
-#1=#10043(Lee parametro para obtener pin de salida)
-#2=1400+#1
+(LUBE - Lubricante OFF - OUT06 + LEDs)
+#2=1400+6
 ##2=0
 #1811=0(LED lubricante)
 #1859=0(LED auxiliar lubricante)

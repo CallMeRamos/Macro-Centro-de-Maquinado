@@ -22,11 +22,13 @@ O0123 (Macro de cambio automatico de herramienta - DEFINITIVO)
 (--- SECCION 1: INICIALIZACION ---)
 G90 G599 (programacion absoluta, sistema de coordenadas G599 para cambio de herramienta)
 #201=#4120 (lee numero de herramienta actual del sistema)
+#152=1 (BLOQUEO: inhabilita teclas F durante cambio de herramienta)
 
 (--- SECCION 1b: VERIFICACION PRE-VUELO ---)
 (Verificar cono sujetado al inicio - P22 debe ser 1)
 IF[#1022 != 1]
 {
+	#152=0
 	#3000=101 (CONO NO SUJETADO AL INICIO - VERIFIQUE P22 Y REINTENTE T)
 }
 
@@ -54,6 +56,7 @@ WHILE[[#1022 != 1] && [#3 < 30]] DO3
 END3
 IF[#1022 != 1]
 {
+	#152=0
 	#3000=105 (CONO NO SUJETADO DESPUES DE RESET P22 - VERIFIQUE MECANISMO)
 }
 (--- SECCION 3: SALIDAS TEMPRANAS ---)
@@ -63,16 +66,19 @@ IF[[#200] == #201]GOTO 100 (si herramienta actual es igual a la solicitada, sale
 (--- SECCION 4: VALIDACIONES ---)
 IF[#400 > 21] (alarma si el maximo de herramientas excede 21)
 {
+	#152=0
 	#3000=1 (Error: numero de herramienta excede el maximo del magazin)
 }
 
 IF[[[#200] > [#400]] || [[#201] > [#400]]] (alarma si herramienta solicitada o actual excede el maximo)
 {
+	#152=0
 	#3000=1 (Error: numero de herramienta excede el maximo del magazin)
 }
 
 IF[#201==0] (alarma si herramienta actual es 0)
 {
+	#152=0
 	#3000=1 (Error: numero de herramienta actual es cero)
 }
 
@@ -89,6 +95,7 @@ WHILE[[#1020 != 1] && [#3 < 50]] DO3
 END3
 IF[#1020 != 1]
 {
+	#152=0
 	#3000=106 (ORIENTACION HUSILLO NO CONFIRMADA P20 - VERIFIQUE SENSOR Y REINTENTE T)
 }
 G04 P2000 (espera 2000ms post-orientacion antes de acercar ATC)
@@ -108,7 +115,8 @@ IF[[#201]!=0] (ejecuta solo si hay herramienta montada)
 	END3
 	IF[#1026 != 0]
 	{
-		#3000=203 (ATC NO LLEGO A POSICION PARA LIBERACION - VERIFIQUE MECANISMO)
+		#152=0
+	#3000=203 (ATC NO LLEGO A POSICION PARA LIBERACION - VERIFIQUE MECANISMO)
 	}
 
 	(--- 6d: liberar cono ---)
@@ -122,7 +130,8 @@ IF[[#201]!=0] (ejecuta solo si hay herramienta montada)
 	END3
 	IF[#1021 != 1]
 	{
-		#3000=202 (CONO NO SE LIBERO P21 - VERIFIQUE MECANISMO Y REINTENTE T)
+		#152=0
+	#3000=202 (CONO NO SE LIBERO P21 - VERIFIQUE MECANISMO Y REINTENTE T)
 	}
 	G04 P500 (espera 500ms post-liberacion antes de subir Z)
 
@@ -193,6 +202,7 @@ WHILE[[#1026 != 0] && [#3 < 50]] DO3
 END3
 IF[#1026 != 0]
 {
+	#152=0
 	#3000=304 (ATC NO LLEGO A POSICION PARA INSERCION - VERIFIQUE MECANISMO)
 }
 
@@ -214,6 +224,7 @@ WHILE[[#1022 != 1] && [#3 < 30]] DO3
 END3
 IF[#1022 != 1]
 {
+	#152=0
 	#3000=301 (CONO NO SUJETADO DESPUES DE INSERCION P22 - VERIFIQUE Y REINTENTE T)
 }
 (--- 10f: regresar ATC ---)
@@ -227,6 +238,7 @@ WHILE[[#1025 != 0] && [#3 < 50]] DO2
 END2
 IF[#1025 != 0]
 {
+	#152=0
 	#3000=303 (ATC NO REGRESO A POSICION - VERIFIQUE MECANISMO Y REINTENTE T)
 }
 M89 P20 L0 (cancela senal de regreso ATC)
@@ -239,10 +251,32 @@ G01 Z[#401] F#405 (sube Z a altura segura)
 (--- 11b: verificacion final - P22 cono sujetado para permitir arranque de husillo ---)
 IF[#1022 != 1]
 {
+	#152=0
 	#3000=305 (CONO NO SUJETADO AL FINALIZAR P22 - VERIFIQUE ANTES DE ARRANCAR HUSILLO)
 }
 
+(--- 11c: actualizar LED de herramienta activa ---)
+IF[#151 > 0]
+{
+	##151=0
+}
+#3=#200
+IF[#3 > 10] #3=#3-10
+IF[#3 == 1] #151=1848
+IF[#3 == 2] #151=1853
+IF[#3 == 3] #151=1858
+IF[#3 == 4] #151=1863
+IF[#3 == 5] #151=1874
+IF[#3 == 6] #151=1890
+IF[#3 == 7] #151=1891
+IF[#3 == 8] #151=1892
+IF[#3 == 9] #151=1893
+IF[#3 == 10] #151=1894
+IF[#3 == 11] #151=1895
+##151=1
+
 (--- SECCION 12: SALIDA ---)
 N100
+#152=0 (DESBLOQUEO: habilita teclas F nuevamente)
 M30
 %
