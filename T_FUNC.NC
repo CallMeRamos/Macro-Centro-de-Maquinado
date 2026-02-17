@@ -19,6 +19,28 @@ O0123 (Macro de cambio automatico de herramienta - DEFINITIVO)
 (    P26 : L0=ATC en posicion de trabajo                  )
 (=========================================================)
 
+(--- VERIFICACION DE MODO ---)
+(Teclas F y programa NC: ambos requieren AUTO/MDI #3906==1. G01 en JOG congela el controlador.)
+#154=#153
+#153=0
+IF[#3906 != 1]
+{
+	M3000
+}
+
+(--- INTERLOCKS DE SEGURIDAD PRE-ARRANQUE ---)
+(No iniciar ATC con husillo girando)
+IF[#3918 != 0]
+{
+	#3000=107 (HUSILLO EN GIRO - DETENGA M03/M04 ANTES DE CAMBIO T)
+}
+
+(Si la llamada viene de panel, exigir control en estado no-running)
+IF[[#154 == 1] && [#3932 == 1]]
+{
+	#3000=108 (LLAMADA PANEL F NO PERMITIDA DURANTE RUNNING - USE JOG EN STOP)
+}
+
 (--- SECCION 1: INICIALIZACION ---)
 G90 G599 (programacion absoluta, sistema de coordenadas G599 para cambio de herramienta)
 #201=#4120 (lee numero de herramienta actual del sistema)

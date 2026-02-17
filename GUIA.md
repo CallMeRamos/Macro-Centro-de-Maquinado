@@ -9,6 +9,7 @@
 La macro O0123 es el programa de **cambio automatico de herramienta** (ATC) para un centro de maquinado CNC con controlador ADTECH CNC4940. Gestiona el ciclo completo: liberar la herramienta actual del husillo, rotar el magazin a la herramienta solicitada, e insertarla en el husillo.
 
 Se ejecuta automaticamente cuando el programa CNC solicita un cambio de herramienta (comando T seguido de M06, o equivalente configurado en el controlador).
+Tambien puede ejecutarse desde teclas F del panel (via `T## + M06`) cuando la llamada de origen marca `#153=1`, solo en modo JOG/MANUAL (`#3906==2`).
 
 ---
 

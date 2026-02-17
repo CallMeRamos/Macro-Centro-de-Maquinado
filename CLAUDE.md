@@ -21,7 +21,7 @@ Macro de cambio automatico de herramienta (ATC - Automatic Tool Changer) para un
 | `M_FUNC.NC` | Macros auxiliares del controlador (M08/M09 refrigerante, M32/M33 lubricante, F0-F11 seleccion de herramientas T01-T21, control de salidas OUT02-OUT47, husillo O203-O205) |
 | `T_FUNC(ORIGINAL).NC` / `M_FUNC(original).NC` | Backups de referencia — NO modificar |
 | `T_FUNC_BACKUP.NC` | Backup adicional de T_FUNC |
-| `ALARMAS.md` | Documentacion detallada de las 9 alarmas activas con troubleshooting |
+| `ALARMAS.md` | Documentacion detallada de las 11 alarmas activas con troubleshooting |
 | `SENALES_IO.md` | Referencia completa de senales I/O con ubicacion exacta por linea |
 | `GUIA.md` | Guia operativa con flujo paso a paso, diagrama, y tabla de tiempos |
 | `MACRO TRAINING.pdf` | Tutorial oficial TOMATECH de macros para CNC4 Series — deployment, sintaxis, user-defined M codes |
@@ -70,7 +70,7 @@ Rangos de variables macro relevantes (referencia completa en `MACRO ADDRESS.xlsx
 
 Archivo de fabrica con ~80 O-programs que implementan M codes definidos por usuario. Cada programa controla una salida digital via direccionamiento indirecto (`#2=1400+N` / `##2=valor`), y muchos sincronizan su LED del panel (`#1800+N`). Todos terminan con `M3000`.
 
-> **M88 y M89 NO existen en este archivo** — son comandos nativos I/O del controlador ADTECH. M98/M99 tampoco aparecen (son subprogram call/return del sistema).
+> **M88 y M89 NO existen en este archivo** — son comandos nativos I/O del controlador ADTECH. `M98/M99` son subprogram call/return del sistema; en esta configuracion F1-F11 usan `T## + M06`.
 
 ### 1. Refrigerante (M08/M09) — Pin dinamico via parametro
 
@@ -110,7 +110,7 @@ Incluye orientacion de husillo (OUT17), selector de pagina F0, seleccion de herr
 
 **F0 (M40/M41)**: Selector de pagina via variable `#150` (volatil). Toggle entre pagina 1 (LED OFF) y pagina 2 (LED ON). Blink 1x=pag1, 2x=pag2.
 
-**F1-F11 (M42-M63)**: Macro ON ejecuta `T##` segun pagina activa. Macro OFF solo apaga LED.
+**F1-F11 (M42-M63)**: Macro ON ejecuta seleccion `T##`, asigna `#200`, marca `#153=1` y dispara `M06` para ejecutar `O0123` desde panel (solo JOG/MANUAL `#3906==2`). Macro OFF solo apaga LED.
 
 | Programa | M Code | Fn | LED | Pag 1 | Pag 2 |
 |----------|--------|----|-----|-------|-------|
@@ -118,7 +118,7 @@ Incluye orientacion de husillo (OUT17), selector de pagina F0, seleccion de herr
 | O0036/O0037 | M36/M37 | — | `#1887` | FCNC6D OUT16 | — |
 | O0038/O0039 | M38/M39 | — | `#1889` | **Orient. husillo** OUT17 | — |
 | O0040/O0041 | M40/M41 | F0 | `#1843` | Selector pagina (#150) | — |
-| O0042/O0043 | M42/M43 | F1 | `#1848` | T1 | — |
+| O0042/O0043 | M42/M43 | F1 | `#1848` | T1 | T11 |
 | O0044/O0045 | M44/M45 | F2 | `#1853` | T2 | T12 |
 | O0046/O0047 | M46/M47 | F3 | `#1858` | T3 | T13 |
 | O0048/O0049 | M48/M49 | F4 | `#1863` | T4 | T14 |
@@ -128,7 +128,7 @@ Incluye orientacion de husillo (OUT17), selector de pagina F0, seleccion de herr
 | O0056/O0057 | M56/M57 | F8 | `#1892` | T8 | T18 |
 | O0058/O0059 | M58/M59 | F9 | `#1893` | T9 | T19 |
 | O0060/O0061 | M60/M61 | F10 | `#1894` | T10 | T20 |
-| O0062/O0063 | M62/M63 | F11 | `#1895` | T11 | T21 |
+| O0062/O0063 | M62/M63 | F11 | `#1895` | — | T21 |
 | O0064/O0065 | M64/M65 | F12 | `#1896` | FCNC6D OUT20 | — |
 | O0066/O0067 | M66/M67 | F13 | `#1897` | FCNC6D OUT21 | — |
 
@@ -148,7 +148,7 @@ Salidas genericas **sin LEDs**. El numero de programa es el M code: O00XX = MXX.
 | | | | | O0096/O0097 | M96/M97 | OUT45 |
 | | | | | O0100/O0101 | M100/M101 | OUT47 |
 
-> **M88/M89 ausentes** — son comandos nativos I/O del ADTECH (escribir/leer entradas digitales). **M98/M99 ausentes** — son subprogram call/return del sistema.
+> **M88/M89 ausentes** — son comandos nativos I/O del ADTECH (escribir/leer entradas digitales). `M98/M99` son subprogram call/return del sistema; en F1-F11 se usa `T## + M06` para cambio fisico.
 
 ### 6. Salidas extendidas (M128-M131, M198-M199) — OUT13, OUT14, OUT46
 
@@ -200,14 +200,16 @@ Versiones extendidas que sincronizan LEDs del panel. Usan pin dinamico igual que
 
 La macro gestiona el ciclo completo de cambio de herramienta con esta secuencia:
 
-1. **Verificacion pre-vuelo** (Sec 1b): Confirma cono sujetado via P22 antes de iniciar
-2. **Reset de salidas** (Sec 2): Apaga todas las salidas y verifica cono sujetado post-reset via P22
-3. **Validaciones** (Sec 3-4): Salidas tempranas si T=0 o T=actual; valida rango de herramientas
-4. **Retraccion y orientacion** (Sec 5): Sube Z, orienta husillo, confirma orientacion via polling P20
-5. **Liberacion de herramienta** (Sec 6): Acerca ATC, libera cono, verifica liberacion P21, retrae Z
-6. **Rotacion del magazin** (Sec 7-9): Algoritmo de ruta mas corta, conteo por pulsos P23
-7. **Insercion de herramienta** (Sec 10): Acerca ATC, baja Z, cierra cono, verifica sujecion P22, regresa ATC
-8. **Finalizacion** (Sec 11-12): Cancela orientacion, aplica compensacion de longitud, verificacion final P22
+1. **Gate de modo por origen** (inicio): Si `#153=1` (panel) permite solo JOG/MANUAL (`#3906==2`); si `#153=0` (NC) permite solo AUTO (`#3906==1`)
+2. **Interlocks pre-arranque**: Bloquea ATC si husillo esta en giro (`#3918!=0`) y bloquea llamada panel en estado running (`#154==1 && #3932==1`)
+3. **Verificacion pre-vuelo** (Sec 1b): Confirma cono sujetado via P22 antes de iniciar
+4. **Reset de salidas** (Sec 2): Apaga todas las salidas y verifica cono sujetado post-reset via P22
+5. **Validaciones** (Sec 3-4): Salidas tempranas si T=0 o T=actual; valida rango de herramientas
+6. **Retraccion y orientacion** (Sec 5): Sube Z, orienta husillo, confirma orientacion via polling P20
+7. **Liberacion de herramienta** (Sec 6): Acerca ATC, libera cono, verifica liberacion P21, retrae Z
+8. **Rotacion del magazin** (Sec 7-9): Algoritmo de ruta mas corta, conteo por pulsos P23
+9. **Insercion de herramienta** (Sec 10): Acerca ATC, baja Z, cierra cono, verifica sujecion P22, regresa ATC
+10. **Finalizacion** (Sec 11-12): Cancela orientacion, aplica compensacion de longitud, verificacion final P22
 
 ## Sensores — Funciones Dedicadas (Regla Estricta)
 
@@ -225,6 +227,8 @@ La macro gestiona el ciclo completo de cambio de herramienta con esta secuencia:
 
 | Variable | Funcion |
 |----------|---------|
+| `#153` | Origen de llamada a O0123 (0=NC, 1=teclas F panel) |
+| `#154` | Snapshot temporal de origen en O0123 |
 | `#200` | Numero de herramienta a cambiar (entrada) |
 | `#201` | Numero de herramienta actual (leida de `#4120`) |
 | `#400` | Maximo numero de herramientas en magazin (21) |

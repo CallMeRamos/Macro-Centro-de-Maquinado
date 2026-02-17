@@ -16,15 +16,17 @@
 
 ---
 
-## Serie 100 — Verificacion pre-vuelo y post-reset (Secciones 1b y 2e) y orientacion (Seccion 5b)
+## Serie 100 — Interlocks de seguridad + pre-vuelo/post-reset/orientacion
 
 Estas alarmas se disparan **antes** de iniciar el cambio de herramienta. Detectan condiciones anormales o fallos en la preparacion.
 
 | Alarma | Sensor | Variable | Condicion | Timeout | Linea | Mensaje en pantalla | Accion del operador |
 |--------|--------|----------|-----------|---------|-------|---------------------|---------------------|
-| 101 | P22 (sujecion) | `#1022` | `#1022 != 1` | — | 28-31 | CONO NO SUJETADO AL INICIO - VERIFIQUE P22 Y REINTENTE T | Verificar mecanismo de sujecion, reintentar T |
-| 105 | P22 (sujecion) | `#1022` | `#1022 != 1` | 3s | 50-58 | CONO NO SUJETADO DESPUES DE RESET P22 - VERIFIQUE MECANISMO | Verificar mecanismo de cierre del cono |
-| 106 | P20 (orientacion) | `#1020` | `#1020 != 1` | 5s | 85-93 | ORIENTACION HUSILLO NO CONFIRMADA P20 - VERIFIQUE SENSOR Y REINTENTE T | Verificar sensor P20 y mecanismo de orientacion |
+| 107 | Husillo | `#3918` | `#3918 != 0` | — | 43-46 | HUSILLO EN GIRO - DETENGA M03/M04 ANTES DE CAMBIO T | Detener husillo y reintentar |
+| 108 | Estado ejecucion | `#3932` | `#154==1` y `#3932 == 1` | — | 49-52 | LLAMADA PANEL F NO PERMITIDA DURANTE RUNNING - USE JOG EN STOP | Pasar a JOG en stop y reintentar |
+| 101 | P22 (sujecion) | `#1022` | `#1022 != 1` | — | 62-65 | CONO NO SUJETADO AL INICIO - VERIFIQUE P22 Y REINTENTE T | Verificar mecanismo de sujecion, reintentar T |
+| 105 | P22 (sujecion) | `#1022` | `#1022 != 1` | 3s | 88-93 | CONO NO SUJETADO DESPUES DE RESET P22 - VERIFIQUE MECANISMO | Verificar mecanismo de cierre del cono |
+| 106 | P20 (orientacion) | `#1020` | `#1020 != 1` | 5s | 125-132 | ORIENTACION HUSILLO NO CONFIRMADA P20 - VERIFIQUE SENSOR Y REINTENTE T | Verificar sensor P20 y mecanismo de orientacion |
 
 **Nota:** Alarma 101 es verificacion instantanea (sin timeout). Alarmas 105 y 106 usan polling con timeout porque los mecanismos necesitan tiempo para estabilizarse.
 
@@ -79,10 +81,12 @@ Las siguientes alarmas existieron en versiones anteriores y fueron removidas:
 
 ---
 
-## Resumen de alarmas activas (9 total)
+## Resumen de alarmas activas (11 total)
 
 | Alarma | Seccion | Sensor | Timeout | Descripcion corta |
 |--------|---------|--------|---------|-------------------|
+| 107 | Pre-seccion 1 | #3918 | — | Husillo en giro al iniciar ATC |
+| 108 | Pre-seccion 1 | #3932 | — | Llamada panel en estado running |
 | 101 | 1b | P22 | — | Cono no sujetado al inicio |
 | 105 | 2e | P22 | 3s | Cono no sujetado post-reset |
 | 106 | 5b | P20 | 5s | Orientacion husillo no confirmada |

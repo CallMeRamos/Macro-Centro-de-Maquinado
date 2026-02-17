@@ -19,8 +19,8 @@
 (*   M18/M19  = OUT08  LED #1856                     *)
 (*   M20/M21  = OUT09  LED #1857                     *)
 (*   M22/M23  = OUT10  LED #1860                     *)
-(*   M24/M25  = OUT11  LED #1862                     *)
-(*   M26/M27  = OUT12  LED #1883                     *)
+(*   M24/M25  = DESHABILITADO (antes CHIP CW)         *)
+(*   M26/M27  = DESHABILITADO (antes CHIP CCW)        *)
 (*                                                    *)
 (* SEC 3 - EXTENDIDAS FCNC6D M128-M131              *)
 (*   M128/M129 = OUT13  LED #1884  Refrigerante 2   *)
@@ -45,8 +45,8 @@
 (*   M58/M59  = F9  LED #1893  PAG1:T09 PAG2:T19    *)
 (*   M60/M61  = F10 LED #1894  PAG1:T10 PAG2:T20    *)
 (*   M62/M63  = F11 LED #1895  PAG2:T21 solamente    *)
-(*   M64/M65  = OUT20  LED #1896  FCNC6D F12        *)
-(*   M66/M67  = OUT21  LED #1897  FCNC6D F13        *)
+(*   M64/M65  = F12  LED #1896  FCNC6D OUT20         *)
+(*   M66/M67  = F13  LED #1897  FCNC6D OUT21         *)
 (*                                                    *)
 (* SEC 6 - USUARIO M68-M87 (sin LEDs)               *)
 (*   M68/M69  = OUT32    M80/M81  = OUT38            *)
@@ -227,32 +227,20 @@ M3000
 %
 
 O0024
-(M24 - OUT11 ON + LED #1862)
-#2=1400+11
-##2=1
-#1862=1
+(M24 - DESHABILITADO - antes CHIP CW)
 M3000
 %
 O0025
-(M25 - OUT11 OFF + LED #1862)
-#2=1400+11
-##2=0
-#1862=0
+(M25 - DESHABILITADO - antes CHIP CW)
 M3000
 %
 
 O0026
-(M26 - FCNC6D OUT12 ON + LED #1883)
-#2=1400+12
-##2=1
-#1883=1
+(M26 - DESHABILITADO - antes CHIP CCW)
 M3000
 %
 O0027
-(M27 - FCNC6D OUT12 OFF + LED #1883)
-#2=1400+12
-##2=0
-#1883=0
+(M27 - DESHABILITADO - antes CHIP CCW)
 M3000
 %
 
@@ -311,7 +299,7 @@ M3000
 (* SECCION 5: SELECCION HERRAMIENTAS F0-F11 + FCNC6D *)
 (* F0 = Selector pagina (variable #150)               *)
 (* F1-F11 = Seleccion herramienta T01-T21             *)
-(* F12-F13 = FCNC6D (sin cambio)                      *)
+(* F12 = ZERO AXIS (#3934) F13 = CENTER FIND (#3934)   *)
 (* OUT15-OUT17, OUT20-OUT21 = FCNC6D                   *)
 (****************************************************)
 O0034
@@ -346,7 +334,7 @@ M3000
 
 O0038
 (M38 - ORIENTACION HUSILLO OUT17 ON + LED #1889)
-IF[#3906 != 3]
+IF[#3906 != 2]
 {
   M3000
 }
@@ -361,7 +349,7 @@ M3000
 %
 O0039
 (M39 - ORIENTACION HUSILLO OUT17 OFF + LED #1889)
-IF[#3906 != 3]
+IF[#3906 != 2]
 {
   M3000
 }
@@ -376,8 +364,8 @@ M3000
 %
 
 O0040
-(M40 - F0 SELECTOR PAGINA HERRAMIENTAS)
-IF[#3906 != 3]
+(M40 - F0 SELECTOR PAGINA HERRAMIENTAS - JOG y MDI/AUTO)
+IF[[#3906 != 2] && [#3906 != 1]]
 {
   M3000
 }
@@ -438,8 +426,8 @@ N50
 M3000
 %
 O0041
-(M41 - F0 SELECTOR PAGINA HERRAMIENTAS)
-IF[#3906 != 3]
+(M41 - F0 SELECTOR PAGINA HERRAMIENTAS - JOG y MDI/AUTO)
+IF[[#3906 != 2] && [#3906 != 1]]
 {
   M3000
 }
@@ -501,8 +489,8 @@ M3000
 %
 
 O0042
-(M42 - F1 herramienta: PAG1=T01 PAG2=T11)
-IF[#3906 != 3]
+(M42 - F1 herramienta: PAG1=T01 PAG2=T11 - SOLO MDI/AUTO)
+IF[#3906 != 1]
 {
   M3000
 }
@@ -519,11 +507,15 @@ IF[#151 > 0]
 IF[#150 != 2]
 {
   T1
+  #200=1
 }
 ELSE
 {
   T11
+  #200=11
 }
+#153=1
+M06
 M3000
 %
 O0043
@@ -532,8 +524,8 @@ M3000
 %
 
 O0044
-(M44 - F2 herramienta: PAG1=T02 PAG2=T12)
-IF[#3906 != 3]
+(M44 - F2 herramienta: PAG1=T02 PAG2=T12 - SOLO MDI/AUTO)
+IF[#3906 != 1]
 {
   M3000
 }
@@ -550,11 +542,15 @@ IF[#151 > 0]
 IF[#150 != 2]
 {
   T2
+  #200=2
 }
 ELSE
 {
   T12
+  #200=12
 }
+#153=1
+M06
 M3000
 %
 O0045
@@ -563,8 +559,8 @@ M3000
 %
 
 O0046
-(M46 - F3 herramienta: PAG1=T03 PAG2=T13)
-IF[#3906 != 3]
+(M46 - F3 herramienta: PAG1=T03 PAG2=T13 - SOLO MDI/AUTO)
+IF[#3906 != 1]
 {
   M3000
 }
@@ -581,11 +577,15 @@ IF[#151 > 0]
 IF[#150 != 2]
 {
   T3
+  #200=3
 }
 ELSE
 {
   T13
+  #200=13
 }
+#153=1
+M06
 M3000
 %
 O0047
@@ -594,8 +594,8 @@ M3000
 %
 
 O0048
-(M48 - F4 herramienta: PAG1=T04 PAG2=T14)
-IF[#3906 != 3]
+(M48 - F4 herramienta: PAG1=T04 PAG2=T14 - SOLO MDI/AUTO)
+IF[#3906 != 1]
 {
   M3000
 }
@@ -612,11 +612,15 @@ IF[#151 > 0]
 IF[#150 != 2]
 {
   T4
+  #200=4
 }
 ELSE
 {
   T14
+  #200=14
 }
+#153=1
+M06
 M3000
 %
 O0049
@@ -625,8 +629,8 @@ M3000
 %
 
 O0050
-(M50 - F5 herramienta: PAG1=T05 PAG2=T15)
-IF[#3906 != 3]
+(M50 - F5 herramienta: PAG1=T05 PAG2=T15 - SOLO MDI/AUTO)
+IF[#3906 != 1]
 {
   M3000
 }
@@ -643,11 +647,15 @@ IF[#151 > 0]
 IF[#150 != 2]
 {
   T5
+  #200=5
 }
 ELSE
 {
   T15
+  #200=15
 }
+#153=1
+M06
 M3000
 %
 O0051
@@ -656,8 +664,8 @@ M3000
 %
 
 O0052
-(M52 - F6 herramienta: PAG1=T06 PAG2=T16)
-IF[#3906 != 3]
+(M52 - F6 herramienta: PAG1=T06 PAG2=T16 - SOLO MDI/AUTO)
+IF[#3906 != 1]
 {
   M3000
 }
@@ -674,11 +682,15 @@ IF[#151 > 0]
 IF[#150 != 2]
 {
   T6
+  #200=6
 }
 ELSE
 {
   T16
+  #200=16
 }
+#153=1
+M06
 M3000
 %
 O0053
@@ -687,8 +699,8 @@ M3000
 %
 
 O0054
-(M54 - F7 herramienta: PAG1=T07 PAG2=T17)
-IF[#3906 != 3]
+(M54 - F7 herramienta: PAG1=T07 PAG2=T17 - SOLO MDI/AUTO)
+IF[#3906 != 1]
 {
   M3000
 }
@@ -705,11 +717,15 @@ IF[#151 > 0]
 IF[#150 != 2]
 {
   T7
+  #200=7
 }
 ELSE
 {
   T17
+  #200=17
 }
+#153=1
+M06
 M3000
 %
 O0055
@@ -718,8 +734,8 @@ M3000
 %
 
 O0056
-(M56 - F8 herramienta: PAG1=T08 PAG2=T18)
-IF[#3906 != 3]
+(M56 - F8 herramienta: PAG1=T08 PAG2=T18 - SOLO MDI/AUTO)
+IF[#3906 != 1]
 {
   M3000
 }
@@ -736,11 +752,15 @@ IF[#151 > 0]
 IF[#150 != 2]
 {
   T8
+  #200=8
 }
 ELSE
 {
   T18
+  #200=18
 }
+#153=1
+M06
 M3000
 %
 O0057
@@ -749,8 +769,8 @@ M3000
 %
 
 O0058
-(M58 - F9 herramienta: PAG1=T09 PAG2=T19)
-IF[#3906 != 3]
+(M58 - F9 herramienta: PAG1=T09 PAG2=T19 - SOLO MDI/AUTO)
+IF[#3906 != 1]
 {
   M3000
 }
@@ -767,11 +787,15 @@ IF[#151 > 0]
 IF[#150 != 2]
 {
   T9
+  #200=9
 }
 ELSE
 {
   T19
+  #200=19
 }
+#153=1
+M06
 M3000
 %
 O0059
@@ -780,8 +804,8 @@ M3000
 %
 
 O0060
-(M60 - F10 herramienta: PAG1=T10 PAG2=T20)
-IF[#3906 != 3]
+(M60 - F10 herramienta: PAG1=T10 PAG2=T20 - SOLO MDI/AUTO)
+IF[#3906 != 1]
 {
   M3000
 }
@@ -798,11 +822,15 @@ IF[#151 > 0]
 IF[#150 != 2]
 {
   T10
+  #200=10
 }
 ELSE
 {
   T20
+  #200=20
 }
+#153=1
+M06
 M3000
 %
 O0061
@@ -811,8 +839,8 @@ M3000
 %
 
 O0062
-(M62 - F11 herramienta: PAG2=T21 solamente)
-IF[#3906 != 3]
+(M62 - F11 herramienta: PAG2=T21 solamente - SOLO MDI/AUTO)
+IF[#3906 != 1]
 {
   M3000
 }
@@ -831,6 +859,9 @@ IF[#151 > 0]
 #1895=1
 #151=1895
 T21
+#200=21
+#153=1
+M06
 M3000
 %
 O0063
@@ -839,30 +870,14 @@ M3000
 %
 
 O0064
-(M64 - FCNC6D F12 OUT20 ON + LED #1896)
-IF[#3906 != 3]
-{
-  M3000
-}
-IF[#3918 != 0]
-{
-  M3000
-}
+(M64 - FCNC6D OUT20 ON + LED #1896)
 #2=1400+20
 ##2=1
 #1896=1
 M3000
 %
 O0065
-(M65 - FCNC6D F12 OUT20 OFF + LED #1896)
-IF[#3906 != 3]
-{
-  M3000
-}
-IF[#3918 != 0]
-{
-  M3000
-}
+(M65 - FCNC6D OUT20 OFF + LED #1896)
 #2=1400+20
 ##2=0
 #1896=0
@@ -870,30 +885,14 @@ M3000
 %
 
 O0066
-(M66 - FCNC6D F13 OUT21 ON + LED #1897)
-IF[#3906 != 3]
-{
-  M3000
-}
-IF[#3918 != 0]
-{
-  M3000
-}
+(M66 - FCNC6D OUT21 ON + LED #1897)
 #2=1400+21
 ##2=1
 #1897=1
 M3000
 %
 O0067
-(M67 - FCNC6D F13 OUT21 OFF + LED #1897)
-IF[#3906 != 3]
-{
-  M3000
-}
-IF[#3918 != 0]
-{
-  M3000
-}
+(M67 - FCNC6D OUT21 OFF + LED #1897)
 #2=1400+21
 ##2=0
 #1897=0
@@ -1131,7 +1130,7 @@ M3000
 (****************************************************)
 O203
 (Husillo adelante - M03 o parar)
-IF[#3906 != 3]
+IF[#3906 != 2]
 {
   M3000
 }
@@ -1153,7 +1152,7 @@ M3000
 %
 O204
 (Husillo reversa - M04 o parar)
-IF[#3906 != 3]
+IF[#3906 != 2]
 {
   M3000
 }

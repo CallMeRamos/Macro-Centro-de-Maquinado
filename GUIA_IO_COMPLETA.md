@@ -104,7 +104,7 @@ Patron: `#2=1400+N` / `##2=1` o `##2=0` — direccionamiento indirecto
 |  |  |  |  | M96 | M97 | OUT45 |
 
 > **M88/M89** no aparecen — son comandos nativos I/O del ADTECH.
-> **M98/M99** no aparecen — son subprogram call/return del sistema.
+> **M98/M99** son subprogram call/return del sistema. En esta configuracion, F1-F11 disparan cambio via `T## + M06`.
 
 ---
 
@@ -245,7 +245,7 @@ Los LEDs de F1-F11 tienen comportamiento **radio button**: solo uno encendido a 
 - `#151` almacena la **direccion** del LED actualmente encendido
 - Al presionar otra tecla F o al completar un cambio de herramienta (O0123), se apaga el LED anterior via `##151=0` (direccionamiento indirecto) y se enciende el nuevo
 - Las macros OFF (M43, M45...M63) son **no-op** — el LED persiste hasta que otra accion lo apague
-- O0123 seccion 11c actualiza el LED al completar un cambio exitoso, funcionando en **modo AUTO y MPG**
+- O0123 seccion 11c actualiza el LED al completar un cambio exitoso, funcionando en llamadas desde **AUTO (archivo NC)** y desde **MPG (teclas F)**
 
 **Bloqueo durante cambio (`#152`):**
 - `#152=1` se activa al inicio de O0123, inhabilitando las teclas F1-F11
@@ -263,6 +263,8 @@ Los LEDs de F1-F11 tienen comportamiento **radio button**: solo uno encendido a 
 | `#150` | Selector de pagina (F0) | 1=pagina 1, 2=pagina 2 | M40/M41, F1-F11 ON macros |
 | `#151` | Direccion LED activo (radio button) | 0=ninguno, 1848-1895=direccion LED | F1-F11 ON macros, O0123 sec 11c |
 | `#152` | Candado cambio de herramienta | 0=libre, 1=bloqueado | O0123, F1-F11 ON macros |
+| `#153` | Origen de llamada a O0123 | 0=NC, 1=teclas F panel | F1-F11 ON macros, O0123 validacion de modo |
+| `#154` | Snapshot de origen (temporal) | Copia interna de `#153` | O0123 validacion de modo |
 
 ### 4.2 Variables de usuario (#200-#499) — Usadas en O0123
 
@@ -312,7 +314,7 @@ Los LEDs de F1-F11 tienen comportamiento **radio button**: solo uno encendido a 
 
 Comando: `#3000=N (MENSAJE)` — detiene ejecucion con alarma
 
-### 5.1 Alarmas activas — 12 total
+### 5.1 Alarmas activas — 14 total
 
 | Alarma | Seccion | Sensor | Condicion | Timeout | Descripcion |
 |--------|---------|--------|-----------|---------|-------------|
@@ -322,6 +324,8 @@ Comando: `#3000=N (MENSAJE)` — detiene ejecucion con alarma
 | 101 | 1b | P22 | `#1022 != 1` | — | Cono no sujetado al inicio |
 | 105 | 2e | P22 | `#1022 != 1` | 3s | Cono no sujetado post-reset |
 | 106 | 5b | P20 | `#1020 != 1` | 5s | Orientacion husillo no confirmada |
+| 107 | Pre-seccion 1 | #3918 | `#3918 != 0` | — | Husillo en giro antes de iniciar ATC |
+| 108 | Pre-seccion 1 | #3932 | `#154==1` y `#3932 == 1` | — | Llamada por panel no permitida en running |
 | 202 | 6e | P21 | `#1021 != 1` | 1.5s | Cono no se libero |
 | 203 | 6b | P26 | `#1026 != 0` | 5s | ATC no llego para liberacion |
 | 301 | 10e | P22 | `#1022 != 1` | 3s | Cono no sujetado post-insercion |
@@ -336,7 +340,7 @@ Comando: `#3000=N (MENSAJE)` — detiene ejecucion con alarma
 | Serie | Rango | Fase |
 |-------|-------|------|
 | 1 | General | Validaciones de rango |
-| 100 | 101-106 | Pre-vuelo y preparacion |
+| 100 | 101-108 | Interlocks + pre-vuelo y preparacion |
 | 200 | 202-203 | Liberacion de herramienta |
 | 300 | 301-305 | Insercion y finalizacion |
 
@@ -372,20 +376,22 @@ Comando: `#3000=N (MENSAJE)` — detiene ejecucion con alarma
 - Toggle entre pagina 1 y pagina 2 via `#150`
 - Pagina 1: LED blink 1 vez → queda OFF
 - Pagina 2: LED blink 2 veces → queda ON
-- Solo funciona en modo MPG (`#3906 == 3`)
+- Funciona solo en modo JOG/MANUAL (`#3906 == 2`)
 
-### 8.2 F1-F11 — Seleccion de herramienta (M42-M63)
+### 8.2 F1-F11 — Seleccion + Cambio de herramienta (M42-M63)
 
 **Flujo de la macro ON (ejemplo M42 — F1):**
 ```
-1. IF[#3906 != 3] → sale (solo modo MPG)
+1. IF[#3906 != 2] → sale (solo modo JOG/MANUAL)
 2. IF[#152 == 1]  → sale (cambio en progreso, BLOQUEADO)
 3. IF[#151 > 0]   → ##151=0 (apaga LED anterior)
 4. #1848=1         (enciende LED F1)
 5. #151=1848       (guarda direccion LED activo)
-6. IF[#150 != 2]  → T1 (pagina 1)
-   ELSE           → ninguna (F1 no tiene pagina 2)
-7. M3000           (fin)
+6. IF[#150 != 2]  → T1  / #200=1
+   ELSE           → T11 / #200=11
+7. #153=1          (marca origen: panel)
+8. M06             (dispara ciclo de cambio con herramienta ya seleccionada)
+9. M3000           (fin)
 ```
 
 **Macro OFF (ejemplo M43 — F1 OFF):**
@@ -409,6 +415,8 @@ Comando: `#3000=N (MENSAJE)` — detiene ejecucion con alarma
 | F10 | M60 (O0060) | M61 (O0061) | #1894 | 1894 | T10 | T20 |
 | F11 | M62 (O0062) | M63 (O0063) | #1895 | 1895 | — | T21 |
 
+> En macros ON, todas las teclas F1-F11 asignan `#200`, marcan `#153=1`, ejecutan `T##`, y disparan `M06`.
+
 ### 8.4 F12-F13 — FCNC6D (sin radio button)
 
 | Tecla | ON | OFF | Salida | LED | Guardas |
@@ -428,7 +436,9 @@ Comando: `#3000=N (MENSAJE)` — detiene ejecucion con alarma
 
 ## 9. Indicador LED de Herramienta en Modo AUTO
 
-O0123 seccion 11c actualiza automaticamente el LED de herramienta al completar cada cambio exitoso. Esto funciona en **todos los modos** (AUTO, MPG, STEP).
+O0123 seccion 11c actualiza automaticamente el LED de herramienta al completar cada cambio exitoso. Esto funciona en:
+- **AUTO** cuando el cambio viene de archivo NC.
+- **JOG/MANUAL** cuando el cambio viene de teclas F (llamada `T## + M06`).
 
 **Logica (T_FUNC.NC lineas 258-276):**
 ```
@@ -511,4 +521,6 @@ VARIABLES VOLATILES              VARIABLES SISTEMA
 #150 → Pagina (1 o 2)           #3906 → Modo controlador
 #151 → LED activo (direccion)   #3918 → Estado husillo
 #152 → Candado cambio T         #4120 → Herramienta actual
+#153 → Origen llamada O0123
+#154 → Snapshot origen O0123
 ```
